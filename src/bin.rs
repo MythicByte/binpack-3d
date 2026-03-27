@@ -8,5 +8,5 @@ pub struct Bin {
     /// Length
     pub length: f32,
     /// Weight
-    max_weight: f32,
+    pub max_weight: f32,
 }
