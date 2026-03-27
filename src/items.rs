@@ -12,7 +12,8 @@ pub struct Item {
     pub length: f32,
     /// Weight
     pub weight: f32,
-    order: u32,
+    /// The order of a item should come out
+    pub order: u32,
 }
 /// A item which is in a bin
 #[derive(Debug)]
