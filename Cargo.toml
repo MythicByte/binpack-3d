@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+hashbrown = { version = "0.16.1", features = ["rayon"] }
+nalgebra = "0.34.1"
 rayon = "1.11.0"
 thiserror = "2.0.18"
 tracing = "0.1.44"

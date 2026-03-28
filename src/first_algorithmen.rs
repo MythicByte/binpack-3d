@@ -11,6 +11,7 @@ use crate::{
     },
     sortedbin::SortedBin,
 };
+use hashbrown::HashSet;
 use nalgebra::Vector3;
 use rayon::iter::{
     IntoParallelIterator,
@@ -24,7 +25,7 @@ use std::hash::Hash;
 pub struct AlgorithmenFirst {
     items: Vec<Item>,
     Bin: Bin,
-    corners: Vec<Corners>,
+    corners: HashSet<Corners>,
     space_left: SpaceLeftBin,
     placed_item: Vec<ItemsPlaced>,
     fitness_weight: AlgorithmenFirstFitnessValues,
@@ -74,7 +75,7 @@ impl AlgorithmenFirst {
     /// Get the newest availbel corners for spots
     ///
     /// append the new corner on the list
-    fn get_corner(bin: &Bin, item: &Item, corn: &Corners, corners: &mut Vec<Corners>) {
+    fn get_corner(bin: &Bin, item: &Item, corn: &Corners, corners: &mut HashSet<Corners>) {
         let one_corner = (
             corn.position.x + item.position.x,
             corn.position.y,
@@ -91,7 +92,7 @@ impl AlgorithmenFirst {
             item.position.z + corn.position.z,
         );
         let new_corners = vec![one_corner, second_corner, three_corner];
-        let mut new_corners: Vec<Corners> = new_corners
+        let mut new_corners: HashSet<Corners> = new_corners
             .into_par_iter()
             .filter(|x| {
                 (x.0 <= bin.position.x) && (x.1 <= bin.position.y) && (x.2 <= bin.position.z)
@@ -100,7 +101,7 @@ impl AlgorithmenFirst {
                 position: Vector3::new(x.0, x.1, x.2),
             })
             .collect();
-        corners.append(&mut new_corners);
+        corners.extend(new_corners);
     }
     /// Gives a index score for where to place
     #[must_use]
@@ -125,7 +126,7 @@ impl AlgorithmenFirst {
     fn find_best_placment(
         bin: &Bin,
         item: &Item,
-        corners: &Vec<Corners>,
+        corners: &HashSet<Corners>,
         space: &SpaceLeftBin,
         weights: &AlgorithmenFirstFitnessValues,
     ) -> Option<(Corners, usize)> {
@@ -155,7 +156,7 @@ impl AlgorithmenFirst {
         bin: &mut Bin,
         item: Item,
         space: &mut SpaceLeftBin,
-        corner_list: &mut Vec<Corners>,
+        corner_list: &mut HashSet<Corners>,
         list_placed_items: &mut Vec<ItemsPlaced>,
     ) -> Result<(), AlgorithmenError> {
         Self::get_corner(bin, &item, &corner, corner_list);
@@ -195,11 +196,13 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         // The output Vec needs for better performance the size pre allocated
         let items_len = input.len();
         let weight_fitenss = AlgorithmenFirstFitnessValues::new(1f32, 1f32, 1f32);
+        let mut one_corner: HashSet<Corners> = HashSet::with_capacity(items_len);
+        _ = one_corner.insert(Corners::new(0f32, 0f32, 0f32));
         if check {
             return Ok(Self {
                 items: input,
                 Bin: bin,
-                corners: vec![Corners::new(0f32, 0f32, 0f32)],
+                corners: one_corner,
                 space_left: space_left,
                 placed_item: Vec::with_capacity(items_len),
                 fitness_weight: weight_fitenss,
@@ -242,7 +245,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 &self.fitness_weight,
             );
             if let Some((corner_checked, index)) = corner {
-                _ = self.corners.swap_remove(index);
+                _ = self.corners.remove(&corner_checked);
                 let place = Self::place_item(
                     corner_checked,
                     &mut self.Bin,
