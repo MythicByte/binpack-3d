@@ -24,3 +24,9 @@ pub struct ItemsPlaced {
     /// Item
     pub item: Item,
 }
+impl ItemsPlaced {
+    /// Default Constructor
+    pub fn new(x: f32, y: f32, z: f32, item: Item) -> Self {
+        Self { x, y, z, item }
+    }
+}

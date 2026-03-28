@@ -134,10 +134,16 @@ impl AlgorithmenFirst {
     fn place_item(
         corner: Corners,
         bin: &Bin,
-        item: &Item,
+        item: Item,
         space: &mut SpaceLeftBin,
+        corner_list: &mut Vec<Corners>,
+        list_placed_items: &mut Vec<ItemsPlaced>,
     ) -> Result<(), AlgorithmenError> {
-        todo!()
+        Self::get_corner(bin, &item, &corner, corner_list);
+        space.0 -= &item.x * &item.y * &item.z;
+        let new_placed_item = ItemsPlaced::new(corner.x, corner.y, corner.z, item);
+        list_placed_items.push(new_placed_item);
+        Ok(())
     }
     /// Checks a Item
     fn check_item(
@@ -197,7 +203,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 .cmp(&b.order)
                 .then_with(|| a.weight.total_cmp(&b.weight))
         });
-        for item_iter in self.items.iter_mut() {
+        for item_iter in self.items.into_iter() {
             let corner = Self::find_best_placment(
                 &self.Bin,
                 &item_iter,
@@ -206,8 +212,14 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 &self.fitness_weight,
             );
             if let Some(corner_checked) = corner {
-                let place =
-                    Self::place_item(corner_checked, &self.Bin, &item_iter, &mut self.space_left)?;
+                let place = Self::place_item(
+                    corner_checked,
+                    &self.Bin,
+                    item_iter,
+                    &mut self.space_left,
+                    &mut self.corners,
+                    &mut self.placed_item,
+                )?;
             } else {
                 return Err(AlgorithmenError::NotEnoughSpace);
             }
