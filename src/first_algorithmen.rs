@@ -11,6 +11,7 @@ use crate::{
     },
     sortedbin::SortedBin,
 };
+use nalgebra::Vector3;
 use rayon::iter::{
     IntoParallelIterator,
     IntoParallelRefIterator,
@@ -31,12 +32,14 @@ pub struct AlgorithmenFirst {
 /// A item corner
 #[derive(Debug, Clone)]
 pub struct Corners {
-    /// x
-    pub x: f32,
-    /// y
-    pub y: f32,
-    /// z
-    pub z: f32,
+    // /// x
+    // pub x: f32,
+    // /// y
+    // pub y: f32,
+    // /// z
+    // pub z: f32,
+    /// The Position of a Item
+    pub position: Vector3<f32>,
 }
 /// For the evaulate where to place the different weights, if chossen wrong items can be miss placed where sub optimal
 #[derive(Debug)]
@@ -61,7 +64,10 @@ impl AlgorithmenFirstFitnessValues {
 impl Corners {
     /// Creates a new corner
     pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Self { x, y, z }
+        // Self { x, y, z }
+        Self {
+            position: Vector3::new(x, y, z),
+        }
     }
 }
 impl AlgorithmenFirst {
@@ -69,17 +75,29 @@ impl AlgorithmenFirst {
     ///
     /// append the new corner on the list
     fn get_corner(bin: &Bin, item: &Item, corn: &Corners, corners: &mut Vec<Corners>) {
-        let one_corner = (corn.x + item.x, item.y, item.z);
-        let second_corner = (item.x, item.y + corn.y, item.z);
-        let three_corner = (item.x, item.y, item.z + corn.z);
+        let one_corner = (
+            corn.position.x + item.position.x,
+            corn.position.y,
+            corn.position.z,
+        );
+        let second_corner = (
+            corn.position.x,
+            item.position.y + corn.position.y,
+            corn.position.z,
+        );
+        let three_corner = (
+            corn.position.x,
+            corn.position.y,
+            item.position.z + corn.position.z,
+        );
         let new_corners = vec![one_corner, second_corner, three_corner];
         let mut new_corners: Vec<Corners> = new_corners
             .into_par_iter()
-            .filter(|x| (x.0 <= bin.width) && (x.1 <= bin.length) && (x.2 <= bin.heigth))
+            .filter(|x| {
+                (x.0 <= bin.position.x) && (x.1 <= bin.position.y) && (x.2 <= bin.position.z)
+            })
             .map(|x| Corners {
-                x: x.0,
-                y: x.1,
-                z: x.2,
+                position: Vector3::new(x.0, x.1, x.2),
             })
             .collect();
         corners.append(&mut new_corners);
@@ -93,12 +111,13 @@ impl AlgorithmenFirst {
         space: &SpaceLeftBin,
         corner: &Corners,
     ) -> u32 {
-        let space = weights.space_weight / space.0;
+        let space_left = weights.space_weight
+            * (space.0 - (item.position.x * item.position.y * item.position.z));
         let order = weights.order_weight * item.order as f32;
         let weight = weights.weight_weight * item.weight;
-        let height = item.z + corner.z;
+        let height = item.position.z + corner.position.z;
         // Downcasting the rounding errros are ignored
-        let final_result: u32 = (space + order + weight + height).round() as u32;
+        let final_result: u32 = (space_left + order + weight + height).round() as u32;
         final_result
     }
     /// Checks best placment
@@ -109,23 +128,23 @@ impl AlgorithmenFirst {
         corners: &Vec<Corners>,
         space: &SpaceLeftBin,
         weights: &AlgorithmenFirstFitnessValues,
-    ) -> Option<Corners> {
-        let mut best_corner: Option<(Corners, u32)> = None;
-        corners.iter().for_each(|x| {
+    ) -> Option<(Corners, usize)> {
+        let mut best_corner: Option<(Corners, u32, usize)> = None;
+        corners.iter().enumerate().for_each(|(index, x)| {
             let (fitness, placment) = Self::check_item(bin, item, x, space, weights);
             if let Some(corn) = &best_corner
                 && placment
                 && fitness > corn.1
             {
-                best_corner = Some((x.clone(), fitness));
-            } else if placment {
+                best_corner = Some((x.clone(), fitness, index));
+            } else if placment && let None = best_corner {
             }
             {
-                best_corner = Some((x.clone(), fitness));
+                best_corner = Some((x.clone(), fitness, index));
             }
         });
         return match best_corner {
-            Some(x) => Some(x.0),
+            Some(x) => Some((x.0, x.2)),
             None => None,
         };
     }
@@ -133,15 +152,21 @@ impl AlgorithmenFirst {
     #[must_use]
     fn place_item(
         corner: Corners,
-        bin: &Bin,
+        bin: &mut Bin,
         item: Item,
         space: &mut SpaceLeftBin,
         corner_list: &mut Vec<Corners>,
         list_placed_items: &mut Vec<ItemsPlaced>,
     ) -> Result<(), AlgorithmenError> {
         Self::get_corner(bin, &item, &corner, corner_list);
-        space.0 -= &item.x * &item.y * &item.z;
-        let new_placed_item = ItemsPlaced::new(corner.x, corner.y, corner.z, item);
+        bin.weight_currently += item.weight;
+        space.0 -= &item.position.x * &item.position.y * &item.position.z;
+        let new_placed_item = ItemsPlaced::new(
+            corner.position.x,
+            corner.position.y,
+            corner.position.z,
+            item,
+        );
         list_placed_items.push(new_placed_item);
         Ok(())
     }
@@ -153,9 +178,9 @@ impl AlgorithmenFirst {
         space: &SpaceLeftBin,
         weights: &AlgorithmenFirstFitnessValues,
     ) -> (u32, bool) {
-        let x_check = bin.width <= (corner.x + item.x);
-        let y_check = bin.length <= (corner.y + item.y);
-        let z_check = bin.heigth <= (corner.z + item.z);
+        let x_check = bin.position.x >= (corner.position.x + item.position.x);
+        let y_check = bin.position.y >= (corner.position.y + item.position.y);
+        let z_check = bin.position.z >= (corner.position.z + item.position.z);
         if x_check && y_check && z_check {
             let score = Self::fitness_score(weights, bin, item, space, &corner);
             return (score, true);
@@ -186,8 +211,13 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
 
     /// calculates the if space is even possible to store in the bin
     fn check_fit_quick(input: &[Item], bin: &Bin) -> (bool, SpaceLeftBin) {
-        let availabel_space = bin.heigth * bin.width * bin.length;
-        let space_used: f32 = { input.par_iter().map(|x| x.x * x.y * x.z).sum() };
+        let availabel_space = bin.position.x * bin.position.y * bin.position.z;
+        let space_used: f32 = {
+            input
+                .par_iter()
+                .map(|x| x.position.x * x.position.y * x.position.z)
+                .sum()
+        };
         (space_used <= availabel_space, SpaceLeftBin(availabel_space))
     }
 
@@ -211,10 +241,11 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 &self.space_left,
                 &self.fitness_weight,
             );
-            if let Some(corner_checked) = corner {
+            if let Some((corner_checked, index)) = corner {
+                _ = self.corners.swap_remove(index);
                 let place = Self::place_item(
                     corner_checked,
-                    &self.Bin,
+                    &mut self.Bin,
                     item_iter,
                     &mut self.space_left,
                     &mut self.corners,
@@ -233,14 +264,16 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
 }
 impl Hash for Corners {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.x.to_bits().hash(state);
-        self.y.to_bits().hash(state);
-        self.z.to_bits().hash(state);
+        self.position.x.to_bits().hash(state);
+        self.position.y.to_bits().hash(state);
+        self.position.z.to_bits().hash(state);
     }
 }
 impl PartialEq for Corners {
     fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y && self.z == other.z
+        self.position.x == other.position.x
+            && self.position.y == other.position.y
+            && self.position.z == other.position.z
     }
 }
 impl Eq for Corners {}
