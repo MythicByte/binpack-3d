@@ -131,8 +131,6 @@ impl AlgorithmenFirst {
             {
                 best_corner = Some((x.clone(), fitness, index));
             } else if placment && let None = best_corner {
-            }
-            {
                 best_corner = Some((x.clone(), fitness, index));
             }
         });
