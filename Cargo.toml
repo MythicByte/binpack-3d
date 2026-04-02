@@ -11,10 +11,14 @@ thiserror = "2.0.18"
 tracing = "0.1.44"
 
 [dev-dependencies]
-criterion = "0.8.2"
+criterion = { version = "0.8.2", features = ["html_reports"] }
 insta = { version = "1.47.2", features = ["yaml"] }
 proptest = "1.11.0"
+rand = { version = "0.10.0", features = ["chacha"] }
 
 [profile.dev.package."*"]
 opt-level = 3
 
+[[bench]]
+name = "first_algorithmen"
+harness = false

@@ -50,7 +50,7 @@ pub struct AlgorithmenFirstFitnessValues {
 }
 impl AlgorithmenFirstFitnessValues {
     /// Constructor for AlgorithmenFirstFitnessValues  
-    pub fn new(order_weight: f32, weight_weight: f32, space_weight: f32) -> Self {
+    pub const fn new(order_weight: f32, weight_weight: f32, space_weight: f32) -> Self {
         Self {
             order_weight,
             weight_weight,
@@ -60,7 +60,7 @@ impl AlgorithmenFirstFitnessValues {
 }
 impl Corners {
     /// Creates a new corner
-    pub fn new(x: u32, y: u32, z: u32) -> Self {
+    pub const fn new(x: u32, y: u32, z: u32) -> Self {
         // Self { x, y, z }
         Self {
             position: Vector3::new(x, y, z),

@@ -20,7 +20,7 @@ pub struct ItemsPlaced {
 }
 impl ItemsPlaced {
     /// Default Constructor
-    pub fn new(x: u32, y: u32, z: u32, item: Item) -> Self {
+    pub const fn new(x: u32, y: u32, z: u32, item: Item) -> Self {
         // Self { x, y, z, item }
         Self {
             position: Vector3::new(x, y, z),
