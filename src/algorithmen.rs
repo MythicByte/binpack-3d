@@ -46,7 +46,7 @@ pub enum AlgorithmenError {
     NoElementLeft,
 }
 /// For a new Algorithmen the correct response
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AlgorithmenCreation<T>
 where
     T: Algorithmen3DBinPackaging,

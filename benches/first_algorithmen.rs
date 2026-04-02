@@ -24,7 +24,13 @@ fn check_first_algorithmen(c: &mut Criterion) {
     let items: Vec<Item> = (0..100)
         .map(|_| Item::new(Vector3::new(10, 10, 10), 10, 1))
         .collect();
-    let algorithmen_in = AlgorithmenFirst::create_algorithmen(items, bin).unwrap();
+    let algorithmen_in = match AlgorithmenFirst::create_algorithmen(items, bin).unwrap() {
+        algorithmen_test3::algorithmen::AlgorithmenCreation::WorkedButToMuchItems {
+            algorithmen,
+            items_to_much,
+        } => algorithmen,
+        algorithmen_test3::algorithmen::AlgorithmenCreation::NoProblems(x) => x,
+    };
     group.bench_function("EqualCheck", |b| {
         b.iter(|| {
             black_box(algorithmen_in.clone().calculate().unwrap());
