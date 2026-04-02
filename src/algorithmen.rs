@@ -16,7 +16,10 @@ where
 {
     /// A Algorithmen Input where all packages are there
     #[must_use]
-    fn create_algorithmen(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError>;
+    fn create_algorithmen(
+        input: Vec<Item>,
+        bin: Bin,
+    ) -> Result<AlgorithmenCreation<Self>, AlgorithmenError>;
     /// Add Items Later
     #[must_use]
     fn add_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError>;
@@ -41,6 +44,22 @@ pub enum AlgorithmenError {
     /// No Element was found in the list, should not be possible
     #[error("No Element was found in the list, should not be possible")]
     NoElementLeft,
+}
+/// For a new Algorithmen the correct response
+#[derive(Debug)]
+pub enum AlgorithmenCreation<T>
+where
+    T: Algorithmen3DBinPackaging,
+{
+    /// Bin could be created with items, but there where to much
+    WorkedButToMuchItems {
+        /// The algorithmen with items
+        algorithmen: T,
+        /// The items which has not been going in the bin
+        items_to_much: Vec<Item>,
+    },
+    /// Worked with not problem
+    NoProblems(T),
 }
 
 /// Converts a u32 which must be in mm converts it to, mm, cm and meter

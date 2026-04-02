@@ -1,12 +1,14 @@
 use crate::{
     algorithmen::{
         Algorithmen3DBinPackaging,
+        AlgorithmenCreation,
         AlgorithmenError,
     },
     bin::{
         Bin,
         SpaceLeftBin,
     },
+    corners::Corners,
     items::{
         Item,
         ItemsPlaced,
@@ -20,7 +22,6 @@ use rayon::iter::{
     IntoParallelRefIterator,
     ParallelIterator,
 };
-use std::hash::Hash;
 
 /// The first algorithmen
 #[derive(Debug, Clone)]
@@ -31,12 +32,6 @@ pub struct AlgorithmenFirst {
     space_left: SpaceLeftBin,
     placed_item: Vec<ItemsPlaced>,
     fitness_weight: AlgorithmenFirstFitnessValues,
-}
-/// A item corner
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct Corners {
-    /// The Position of a Item
-    pub position: Vector3<u32>,
 }
 /// For the evaulate where to place the different weights, if chossen wrong items can be miss placed where sub optimal
 #[derive(Debug, Clone)]
@@ -188,7 +183,10 @@ impl AlgorithmenFirst {
 }
 impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     /// Creates a new Algorithmen with the basic infos
-    fn create_algorithmen(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError> {
+    fn create_algorithmen(
+        input: Vec<Item>,
+        bin: Bin,
+    ) -> Result<AlgorithmenCreation<Self>, AlgorithmenError> {
         let (check, space_left) = Self::check_fit_quick(&input, &bin);
         // The output Vec needs for better performance the size pre allocated
         let items_len = input.len();
@@ -196,14 +194,14 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         let mut one_corner: HashSet<Corners> = HashSet::with_capacity(items_len);
         _ = one_corner.insert(Corners::new(0, 0, 0));
         if check {
-            return Ok(Self {
+            return Ok(AlgorithmenCreation::NoProblems(Self {
                 items: input,
                 Bin: bin,
                 corners: one_corner,
                 space_left: space_left,
                 placed_item: Vec::with_capacity(items_len),
                 fitness_weight: weight_fitenss,
-            });
+            }));
         } else {
             return Err(AlgorithmenError::NotEnoughSpace);
         }

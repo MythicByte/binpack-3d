@@ -7,6 +7,8 @@
 pub mod algorithmen;
 /// A bin for items
 pub mod bin;
+/// The corner
+pub mod corners;
 /// The first algorithmen for placing items in a bin
 pub mod first_algorithmen;
 /// A item
