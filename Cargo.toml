@@ -12,3 +12,9 @@ tracing = "0.1.44"
 
 [dev-dependencies]
 criterion = "0.8.2"
+insta = { version = "1.47.2", features = ["yaml"] }
+proptest = "1.11.0"
+
+[profile.dev.package."*"]
+opt-level = 3
+

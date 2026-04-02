@@ -1,38 +1,26 @@
 use nalgebra::Vector3;
 
 /// The Item which should be sorted in the bin
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Item {
-    // /// x
-    // pub x: f32,
-    // /// y
-    // pub y: f32,
-    // /// z
-    // pub z: f32,
     /// The Position of a Item
-    pub position: Vector3<f32>,
+    pub position: Vector3<u32>,
     /// Weight
-    pub weight: f32,
+    pub weight: u32,
     /// The order of a item should come out
     pub order: u32,
 }
 /// A item which is in a bin
 #[derive(Debug)]
 pub struct ItemsPlaced {
-    // /// x
-    // pub x: f32,
-    // /// y
-    // pub y: f32,
-    // /// z
-    // pub z: f32,
     /// The Position of a Item
-    pub position: Vector3<f32>,
+    pub position: Vector3<u32>,
     /// Item
     pub item: Item,
 }
 impl ItemsPlaced {
     /// Default Constructor
-    pub fn new(x: f32, y: f32, z: f32, item: Item) -> Self {
+    pub fn new(x: u32, y: u32, z: u32, item: Item) -> Self {
         // Self { x, y, z, item }
         Self {
             position: Vector3::new(x, y, z),

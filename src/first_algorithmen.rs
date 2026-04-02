@@ -2,9 +2,11 @@ use crate::{
     algorithmen::{
         Algorithmen3DBinPackaging,
         AlgorithmenError,
+    },
+    bin::{
+        Bin,
         SpaceLeftBin,
     },
-    bin::Bin,
     items::{
         Item,
         ItemsPlaced,
@@ -31,16 +33,10 @@ pub struct AlgorithmenFirst {
     fitness_weight: AlgorithmenFirstFitnessValues,
 }
 /// A item corner
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Corners {
-    // /// x
-    // pub x: f32,
-    // /// y
-    // pub y: f32,
-    // /// z
-    // pub z: f32,
     /// The Position of a Item
-    pub position: Vector3<f32>,
+    pub position: Vector3<u32>,
 }
 /// For the evaulate where to place the different weights, if chossen wrong items can be miss placed where sub optimal
 #[derive(Debug)]
@@ -64,7 +60,7 @@ impl AlgorithmenFirstFitnessValues {
 }
 impl Corners {
     /// Creates a new corner
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
+    pub fn new(x: u32, y: u32, z: u32) -> Self {
         // Self { x, y, z }
         Self {
             position: Vector3::new(x, y, z),
@@ -92,7 +88,7 @@ impl AlgorithmenFirst {
             item.position.z + corn.position.z,
         );
         let new_corners = vec![one_corner, second_corner, three_corner];
-        let mut new_corners: HashSet<Corners> = new_corners
+        let new_corners: HashSet<Corners> = new_corners
             .into_par_iter()
             .filter(|x| {
                 (x.0 <= bin.position.x) && (x.1 <= bin.position.y) && (x.2 <= bin.position.z)
@@ -112,13 +108,14 @@ impl AlgorithmenFirst {
         space: &SpaceLeftBin,
         corner: &Corners,
     ) -> u32 {
-        let space_left = weights.space_weight
-            * (space.0 - (item.position.x * item.position.y * item.position.z));
-        let order = weights.order_weight * item.order as f32;
-        let weight = weights.weight_weight * item.weight;
+        let space_left: u32 = (weights.space_weight
+            * (space.0 - (item.position.x * item.position.y * item.position.z)) as f32)
+            as u32;
+        let order = (weights.order_weight * item.order as f32) as u32;
+        let weight = (weights.weight_weight * item.weight as f32) as u32;
         let height = item.position.z + corner.position.z;
         // Downcasting the rounding errros are ignored
-        let final_result: u32 = (space_left + order + weight + height).round() as u32;
+        let final_result: u32 = space_left + order + weight + height;
         final_result
     }
     /// Checks best placment
@@ -191,13 +188,13 @@ impl AlgorithmenFirst {
 }
 impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     /// Creates a new Algorithmen with the basic infos
-    fn give_offline(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError> {
+    fn create_algorithmen(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError> {
         let (check, space_left) = Self::check_fit_quick(&input, &bin);
         // The output Vec needs for better performance the size pre allocated
         let items_len = input.len();
         let weight_fitenss = AlgorithmenFirstFitnessValues::new(1f32, 1f32, 1f32);
         let mut one_corner: HashSet<Corners> = HashSet::with_capacity(items_len);
-        _ = one_corner.insert(Corners::new(0f32, 0f32, 0f32));
+        _ = one_corner.insert(Corners::new(0, 0, 0));
         if check {
             return Ok(Self {
                 items: input,
@@ -215,7 +212,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     /// calculates the if space is even possible to store in the bin
     fn check_fit_quick(input: &[Item], bin: &Bin) -> (bool, SpaceLeftBin) {
         let availabel_space = bin.position.x * bin.position.y * bin.position.z;
-        let space_used: f32 = {
+        let space_used: u32 = {
             input
                 .par_iter()
                 .map(|x| x.position.x * x.position.y * x.position.z)
@@ -231,11 +228,8 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         // Sorting after order and wheight
         //
         // weight ordering is lazy evualated
-        self.items.sort_unstable_by(|a, b| {
-            a.order
-                .cmp(&b.order)
-                .then_with(|| a.weight.total_cmp(&b.weight))
-        });
+        self.items
+            .sort_unstable_by(|a, b| a.order.cmp(&b.order).then_with(|| a.weight.cmp(&b.weight)));
         for item_iter in self.items.into_iter() {
             let corner = Self::find_best_placment(
                 &self.Bin,
@@ -264,19 +258,28 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
             items: self.placed_item,
         })
     }
-}
-impl Hash for Corners {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.position.x.to_bits().hash(state);
-        self.position.y.to_bits().hash(state);
-        self.position.z.to_bits().hash(state);
+
+    fn add_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError> {
+        todo!()
+    }
+
+    fn remove_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError> {
+        for value in input.iter() {
+            if let Some(index) = self.items.iter().enumerate().find(|x| x.1 == value) {
+                _ = self.items.remove(index.0);
+            }
+        }
+        Ok(())
+    }
+
+    fn space_left(&self) -> u32 {
+        let availabel_space = self.Bin.position.x * self.Bin.position.y * self.Bin.position.z;
+        let space_used: u32 = {
+            self.items
+                .par_iter()
+                .map(|x| x.position.x * x.position.y * x.position.z)
+                .sum()
+        };
+        availabel_space - space_used
     }
 }
-impl PartialEq for Corners {
-    fn eq(&self, other: &Self) -> bool {
-        self.position.x == other.position.x
-            && self.position.y == other.position.y
-            && self.position.z == other.position.z
-    }
-}
-impl Eq for Corners {}

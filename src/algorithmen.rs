@@ -1,7 +1,10 @@
 use thiserror::Error;
 
 use crate::{
-    bin::Bin,
+    bin::{
+        Bin,
+        SpaceLeftBin,
+    },
     items::Item,
     sortedbin::SortedBin,
 };
@@ -13,9 +16,15 @@ where
 {
     /// A Algorithmen Input where all packages are there
     #[must_use]
-    fn give_offline(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError>;
-    // For later
-    // fn give_online(input: Vec<Items>, bin: Bin) -> Result<SortedBin, Box<dyn std::error::Error>>;
+    fn create_algorithmen(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError>;
+    /// Add Items Later
+    #[must_use]
+    fn add_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError>;
+    /// Remove Item
+    #[must_use]
+    fn remove_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError>;
+    /// If Space is left
+    fn space_left(&self) -> u32;
     /// Checks if the Items can be in a bin, possible fast check
     fn check_fit_quick(input: &[Item], bin: &Bin) -> (bool, SpaceLeftBin);
     /// A final result
@@ -33,6 +42,39 @@ pub enum AlgorithmenError {
     #[error("No Element was found in the list, should not be possible")]
     NoElementLeft,
 }
-/// Gives for a Bin Space back
-#[derive(Debug)]
-pub struct SpaceLeftBin(pub f32);
+
+/// Converts a u32 which must be in mm converts it to, mm, cm and meter
+macro_rules! convert_mm_to_meter_cm_mm {
+    ($input:expr) => {{
+        let input: u32 = $input;
+        let (mut meter, mut cm, mut mm): (u32, u32, u32) = (0, 0, 0);
+        mm = input % 10;
+        cm = (input / 10) % 10;
+        meter = input / 100;
+        (meter, cm, mm)
+    }};
+}
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_yaml_snapshot;
+    use proptest::prelude::*;
+    #[test]
+    fn check_macro() {
+        let values = convert_mm_to_meter_cm_mm!(97834);
+        assert_eq!(97834, (values.0 * 100 + values.1 * 10 + values.2));
+    }
+    #[test]
+    fn check_macro_insta() {
+        let value = convert_mm_to_meter_cm_mm!(12435534);
+        assert_yaml_snapshot!(value);
+    }
+    proptest! {
+        #[allow(unused_parens)]
+        #[test]
+        fn check_macro_proptest(input in any::<u32>()) {
+            let value = convert_mm_to_meter_cm_mm!(input);
+            prop_assert_eq!(input,(value.0 * 100 + value.1 * 10 + value.2));
+        }
+    }
+}
