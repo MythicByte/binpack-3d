@@ -23,7 +23,7 @@ use rayon::iter::{
 use std::hash::Hash;
 
 /// The first algorithmen
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AlgorithmenFirst {
     items: Vec<Item>,
     Bin: Bin,
@@ -39,7 +39,7 @@ pub struct Corners {
     pub position: Vector3<u32>,
 }
 /// For the evaulate where to place the different weights, if chossen wrong items can be miss placed where sub optimal
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AlgorithmenFirstFitnessValues {
     /// The order weight
     pub order_weight: f32,
@@ -238,7 +238,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 &self.space_left,
                 &self.fitness_weight,
             );
-            if let Some((corner_checked, index)) = corner {
+            if let Some((corner_checked, _index)) = corner {
                 _ = self.corners.remove(&corner_checked);
                 let place = Self::place_item(
                     corner_checked,
@@ -260,7 +260,17 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     }
 
     fn add_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError> {
-        todo!()
+        let space_used: u32 = input
+            .par_iter()
+            .map(|x| x.position.x * x.position.y * x.position.z)
+            .sum();
+        let check = self.space_left.0.saturating_sub(space_used);
+        if check > 0 {
+            self.items.extend(input);
+            Ok(())
+        } else {
+            Err(AlgorithmenError::NotEnoughSpace)
+        }
     }
 
     fn remove_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError> {
