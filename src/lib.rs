@@ -17,3 +17,7 @@ pub mod first_algorithmen;
 pub mod items;
 /// Finished Bin
 pub mod sortedbin;
+/// Vectors
+pub mod vector;
+/// Wasm interface
+pub mod wasm_interface;

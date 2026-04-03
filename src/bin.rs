@@ -1,7 +1,13 @@
-use nalgebra::Vector3;
+use serde::{
+    Deserialize,
+    Serialize,
+};
+use wasm_bindgen::prelude::wasm_bindgen;
+
+use crate::vector::Vector3;
 
 /// The Bin to the placed into
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bin {
     /// The Position of a Item
     pub position: Vector3<u32>,
@@ -21,7 +27,7 @@ impl Bin {
     }
 }
 /// Gives for a Bin Space back
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpaceLeftBin(pub u32);
 impl SpaceLeftBin {
     /// Default Constructor

@@ -5,11 +5,13 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
-hashbrown = { version = "0.16.1", features = ["rayon"] }
-nalgebra = "0.34.1"
+hashbrown = { version = "0.16.1", features = ["rayon", "serde"] }
+num-traits = "0.2.19"
 rayon = "1.11.0"
+serde = "1.0.228"
 thiserror = "2.0.18"
 tracing = "0.1.44"
+wasm-bindgen = "0.2.117"
 
 [dev-dependencies]
 criterion = { version = "0.8.2", features = ["html_reports"] }

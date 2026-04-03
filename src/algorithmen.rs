@@ -44,6 +44,9 @@ pub enum AlgorithmenError {
     /// No Element was found in the list, should not be possible
     #[error("No Element was found in the list, should not be possible")]
     NoElementLeft,
+    /// Item was to big for item
+    #[error("Item was to big for item")]
+    ItemToBigForBin,
 }
 /// For a new Algorithmen the correct response
 #[derive(Debug, Clone)]

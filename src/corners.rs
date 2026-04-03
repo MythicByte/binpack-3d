@@ -1,7 +1,12 @@
-use nalgebra::Vector3;
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
+use crate::vector::Vector3;
 
 /// A item corner
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Corners {
     /// The Position of a Item
     pub position: Vector3<u32>,

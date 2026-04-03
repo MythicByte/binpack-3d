@@ -1,12 +1,15 @@
-use nalgebra::Vector3;
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
-use crate::corners::Corners;
+use crate::vector::Vector3;
 
 /// The Item which should be sorted in the bin
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct Item {
-    /// The Position of a Item
-    pub position: Vector3<u32>,
+    /// The size of a Item
+    pub size_cube: Vector3<u32>,
     /// Weight
     pub weight: u32,
     /// The order of a item should come out
@@ -16,14 +19,14 @@ impl Item {
     /// Default Constructor
     pub const fn new(position: Vector3<u32>, weight: u32, order: u32) -> Self {
         Self {
-            position,
+            size_cube: position,
             weight,
             order,
         }
     }
     /// How to rotate the item in all directions
     pub fn rotation(&self) -> Vec<Vector3<u32>> {
-        let (x, y, z) = (self.position.x, self.position.y, self.position.z);
+        let (x, y, z) = (self.size_cube.x, self.size_cube.y, self.size_cube.z);
         let first_rotation = Vector3::new(y, x, z);
         let second_rotation = Vector3::new(x, z, y);
         let third_rotation = Vector3::new(x, z, y);
@@ -43,7 +46,7 @@ impl Item {
     }
 }
 /// A item which is in a bin
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemsPlaced {
     /// The Position of a Item
     pub position: Vector3<u32>,

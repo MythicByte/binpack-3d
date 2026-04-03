@@ -15,17 +15,23 @@ use crate::{
         ItemsPlaced,
     },
     sortedbin::SortedBin,
+    vector::Vector3,
 };
 use hashbrown::HashSet;
-use nalgebra::Vector3;
 use rayon::iter::{
     IntoParallelIterator,
     IntoParallelRefIterator,
     ParallelIterator,
 };
+use serde::{
+    Deserialize,
+    Serialize,
+};
+use wasm_bindgen::prelude::wasm_bindgen;
 
 /// The first algorithmen
-#[derive(Debug, Clone)]
+#[wasm_bindgen]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AlgorithmenFirst {
     items: Vec<Item>,
     Bin: Bin,
@@ -36,7 +42,7 @@ pub struct AlgorithmenFirst {
     collision_checker: AABBVersion1,
 }
 /// For the evaulate where to place the different weights, if chossen wrong items can be miss placed where sub optimal
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AlgorithmenFirstFitnessValues {
     /// The order weight
     pub order_weight: f32,
@@ -70,19 +76,19 @@ impl AlgorithmenFirst {
     /// append the new corner on the list
     fn get_corner(bin: &Bin, item: &Item, corn: &Corners, corners: &mut HashSet<Corners>) {
         let one_corner = (
-            corn.position.x + item.position.x,
+            corn.position.x + item.size_cube.x,
             corn.position.y,
             corn.position.z,
         );
         let second_corner = (
             corn.position.x,
-            item.position.y + corn.position.y,
+            item.size_cube.y + corn.position.y,
             corn.position.z,
         );
         let three_corner = (
             corn.position.x,
             corn.position.y,
-            item.position.z + corn.position.z,
+            item.size_cube.z + corn.position.z,
         );
         let new_corners = vec![one_corner, second_corner, three_corner];
         let new_corners: HashSet<Corners> = new_corners
@@ -155,7 +161,7 @@ impl AlgorithmenFirst {
     ) -> Result<(), AlgorithmenError> {
         Self::get_corner(bin, &item, &corner, corner_list);
         bin.weight_currently += item.weight;
-        space.0 -= &item.position.x * &item.position.y * &item.position.z;
+        space.0 -= &item.size_cube.x * &item.size_cube.y * &item.size_cube.z;
         let new_placed_item = ItemsPlaced::new(corner.position, item);
         list_placed_items.push(new_placed_item);
         Ok(())
@@ -182,6 +188,8 @@ impl AlgorithmenFirst {
 }
 impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     /// Creates a new Algorithmen with the basic infos
+    ///
+    /// # TODO If a Item is to big for the Bin remove it
     fn create_algorithmen(
         input: Vec<Item>,
         bin: Bin,
@@ -213,7 +221,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         let space_used: u32 = {
             input
                 .par_iter()
-                .map(|x| x.position.x * x.position.y * x.position.z)
+                .map(|x| x.size_cube.x * x.size_cube.y * x.size_cube.z)
                 .sum()
         };
         (space_used <= availabel_space, SpaceLeftBin(availabel_space))
@@ -266,7 +274,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     fn add_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError> {
         let space_used: u32 = input
             .par_iter()
-            .map(|x| x.position.x * x.position.y * x.position.z)
+            .map(|x| x.size_cube.x * x.size_cube.y * x.size_cube.z)
             .sum();
         let check = self.space_left.0.saturating_sub(space_used);
         if check > 0 {
@@ -291,7 +299,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         let space_used: u32 = {
             self.items
                 .par_iter()
-                .map(|x| x.position.x * x.position.y * x.position.z)
+                .map(|x| x.size_cube.x * x.size_cube.y * x.size_cube.z)
                 .sum()
         };
         availabel_space - space_used

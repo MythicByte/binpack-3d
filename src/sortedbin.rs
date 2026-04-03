@@ -11,3 +11,9 @@ pub struct SortedBin {
     /// Items
     pub items: Vec<ItemsPlaced>,
 }
+impl SortedBin {
+    /// Creates basic items
+    pub fn new(bin: Bin, items: Vec<ItemsPlaced>) -> Self {
+        Self { bin, items }
+    }
+}
