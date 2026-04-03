@@ -3,6 +3,8 @@
 #![deny(missing_docs)]
 #![deny(unused_must_use)]
 #![deny(unused_results)]
+/// A AABB Checker
+pub mod aabb;
 /// The generic trait for the algorithmens
 pub mod algorithmen;
 /// A bin for items

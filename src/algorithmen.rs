@@ -61,39 +61,3 @@ where
     /// Worked with not problem
     NoProblems(T),
 }
-
-/// Converts a u32 which must be in mm converts it to, mm, cm and meter
-macro_rules! convert_mm_to_meter_cm_mm {
-    ($input:expr) => {{
-        let input: u32 = $input;
-        let (mut meter, mut cm, mut mm): (u32, u32, u32) = (0, 0, 0);
-        mm = input % 10;
-        cm = (input / 10) % 10;
-        meter = input / 100;
-        (meter, cm, mm)
-    }};
-}
-
-#[cfg(test)]
-mod tests {
-    use insta::assert_yaml_snapshot;
-    use proptest::prelude::*;
-    #[test]
-    fn check_macro() {
-        let values = convert_mm_to_meter_cm_mm!(97834);
-        assert_eq!(97834, (values.0 * 100 + values.1 * 10 + values.2));
-    }
-    #[test]
-    fn check_macro_insta() {
-        let value = convert_mm_to_meter_cm_mm!(12435534);
-        assert_yaml_snapshot!(value);
-    }
-    proptest! {
-        #[allow(unused_parens)]
-        #[test]
-        fn check_macro_proptest(input in any::<u32>()) {
-            let value = convert_mm_to_meter_cm_mm!(input);
-            prop_assert_eq!(input,(value.0 * 100 + value.1 * 10 + value.2));
-        }
-    }
-}

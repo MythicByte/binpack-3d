@@ -22,23 +22,24 @@ impl Item {
         }
     }
     /// How to rotate the item in all directions
-    pub fn rotation(&self) -> (Corners, Corners, Corners, Corners, Corners, Corners) {
+    pub fn rotation(&self) -> Vec<Vector3<u32>> {
         let (x, y, z) = (self.position.x, self.position.y, self.position.z);
-        let create_corner = |x: Vector3<u32>| Corners::from(x);
-        let first_rotation = create_corner(Vector3::new(y, x, z));
-        let second_rotation = create_corner(Vector3::new(x, z, y));
-        let third_rotation = create_corner(Vector3::new(x, z, y));
-        let four_rotation = create_corner(Vector3::new(z, x, y));
-        let five_rotation = create_corner(Vector3::new(y, z, x));
-        let sixs_rotation = create_corner(Vector3::new(z, y, x));
-        (
+        let first_rotation = Vector3::new(y, x, z);
+        let second_rotation = Vector3::new(x, z, y);
+        let third_rotation = Vector3::new(x, z, y);
+        let four_rotation = Vector3::new(z, x, y);
+        let five_rotation = Vector3::new(y, z, x);
+        let sixs_rotation = Vector3::new(z, y, x);
+        let normal_rotation = Vector3::new(x, y, z);
+        vec![
+            normal_rotation,
             first_rotation,
             second_rotation,
             third_rotation,
             four_rotation,
             five_rotation,
             sixs_rotation,
-        )
+        ]
     }
 }
 /// A item which is in a bin

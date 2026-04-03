@@ -15,6 +15,7 @@ dependencies = [
 name = "algorithmen_test3"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "criterion",
  "hashbrown 0.16.1",
  "insta",

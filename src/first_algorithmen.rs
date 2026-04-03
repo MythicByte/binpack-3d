@@ -1,4 +1,5 @@
 use crate::{
+    aabb::AABBVersion1,
     algorithmen::{
         Algorithmen3DBinPackaging,
         AlgorithmenCreation,
@@ -32,6 +33,7 @@ pub struct AlgorithmenFirst {
     space_left: SpaceLeftBin,
     placed_item: Vec<ItemsPlaced>,
     fitness_weight: AlgorithmenFirstFitnessValues,
+    collision_checker: AABBVersion1,
 }
 /// For the evaulate where to place the different weights, if chossen wrong items can be miss placed where sub optimal
 #[derive(Debug, Clone)]
@@ -98,16 +100,17 @@ impl AlgorithmenFirst {
     #[must_use]
     fn fitness_score(
         weights: &AlgorithmenFirstFitnessValues,
-        _bin: &Bin,
-        item: &Item,
+        bin: &Bin,
+        item: &Vector3<u32>,
         space: &SpaceLeftBin,
         corner: &Corners,
+        order: u32,
+        weight: u32,
     ) -> f32 {
-        let space_left = weights.space_weight
-            * (space.0 - (item.position.x * item.position.y * item.position.z)) as f32;
-        let order = weights.order_weight * item.order as f32;
-        let weight = weights.weight_weight * item.weight as f32;
-        let height = (item.position.z + corner.position.z) as f32;
+        let space_left = weights.space_weight * (space.0 - (item.x * item.y * item.z)) as f32;
+        let order = weights.order_weight * order as f32;
+        let weight = weights.weight_weight * weight as f32;
+        let height = (item.z + corner.position.z) as f32;
         // Downcasting the rounding errros are ignored
         let final_result: f32 = space_left + order + weight + height;
         final_result
@@ -116,14 +119,16 @@ impl AlgorithmenFirst {
     #[must_use]
     fn find_best_placment(
         bin: &Bin,
-        item: &Item,
+        item: &Vector3<u32>,
         corners: &HashSet<Corners>,
         space: &SpaceLeftBin,
         weights: &AlgorithmenFirstFitnessValues,
+        order: u32,
+        weight: u32,
     ) -> Option<(Corners, usize)> {
         let mut best_corner: Option<(Corners, f32, usize)> = None;
         corners.iter().enumerate().for_each(|(index, x)| {
-            let (fitness, placment) = Self::check_item(bin, item, x, space, weights);
+            let (fitness, placment) = Self::check_item(bin, item, x, space, weights, order, weight);
             if let Some(corn) = &best_corner
                 && placment
                 && fitness > corn.1 as f32
@@ -158,16 +163,18 @@ impl AlgorithmenFirst {
     /// Checks a Item
     fn check_item(
         bin: &Bin,
-        item: &Item,
+        item: &Vector3<u32>,
         corner: &Corners,
         space: &SpaceLeftBin,
         weights: &AlgorithmenFirstFitnessValues,
+        order: u32,
+        weight: u32,
     ) -> (f32, bool) {
-        let x_check = bin.position.x >= (corner.position.x + item.position.x);
-        let y_check = bin.position.y >= (corner.position.y + item.position.y);
-        let z_check = bin.position.z >= (corner.position.z + item.position.z);
+        let x_check = bin.position.x >= (corner.position.x + item.x);
+        let y_check = bin.position.y >= (corner.position.y + item.y);
+        let z_check = bin.position.z >= (corner.position.z + item.z);
         if x_check && y_check && z_check {
-            let score = Self::fitness_score(weights, bin, item, space, &corner);
+            let score = Self::fitness_score(weights, bin, item, space, &corner, order, weight);
             return (score, true);
         }
         (f32::MAX, false)
@@ -188,11 +195,12 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         if check {
             return Ok(AlgorithmenCreation::NoProblems(Self {
                 items: input,
-                Bin: bin,
                 corners: one_corner,
                 space_left: space_left,
                 placed_item: Vec::with_capacity(items_len),
                 fitness_weight: weight_fitenss,
+                collision_checker: AABBVersion1::new(bin.clone()),
+                Bin: bin,
             }));
         } else {
             return Err(AlgorithmenError::NotEnoughSpace);
@@ -212,8 +220,6 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     }
 
     /// Gives the final order placment in the bin with the items back
-    ///
-    /// TODO: The Items can be rotated, needs to be implemented
     fn calculate(mut self) -> Result<SortedBin, AlgorithmenError> {
         // Sorting after order and wheight
         //
@@ -221,14 +227,22 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         self.items
             .sort_unstable_by(|a, b| a.order.cmp(&b.order).then_with(|| a.weight.cmp(&b.weight)));
         for item_iter in self.items.into_iter() {
-            let corner = Self::find_best_placment(
-                &self.Bin,
-                &item_iter,
-                &self.corners,
-                &self.space_left,
-                &self.fitness_weight,
-            );
-            if let Some((corner_checked, _index)) = corner {
+            let get_all_rotations = item_iter.rotation();
+            let corner = get_all_rotations
+                .into_par_iter()
+                .filter_map(|x| {
+                    Self::find_best_placment(
+                        &self.Bin,
+                        &x,
+                        &self.corners,
+                        &self.space_left,
+                        &self.fitness_weight,
+                        item_iter.order,
+                        item_iter.weight,
+                    )
+                })
+                .min_by_key(|x| x.1);
+            if let Some((corner_checked, index)) = corner {
                 _ = self.corners.remove(&corner_checked);
                 let place = Self::place_item(
                     corner_checked,
