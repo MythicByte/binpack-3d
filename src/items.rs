@@ -1,5 +1,7 @@
 use nalgebra::Vector3;
 
+use crate::corners::Corners;
+
 /// The Item which should be sorted in the bin
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct Item {
@@ -19,6 +21,25 @@ impl Item {
             order,
         }
     }
+    /// How to rotate the item in all directions
+    pub fn rotation(&self) -> (Corners, Corners, Corners, Corners, Corners, Corners) {
+        let (x, y, z) = (self.position.x, self.position.y, self.position.z);
+        let create_corner = |x: Vector3<u32>| Corners::from(x);
+        let first_rotation = create_corner(Vector3::new(y, x, z));
+        let second_rotation = create_corner(Vector3::new(x, z, y));
+        let third_rotation = create_corner(Vector3::new(x, z, y));
+        let four_rotation = create_corner(Vector3::new(z, x, y));
+        let five_rotation = create_corner(Vector3::new(y, z, x));
+        let sixs_rotation = create_corner(Vector3::new(z, y, x));
+        (
+            first_rotation,
+            second_rotation,
+            third_rotation,
+            four_rotation,
+            five_rotation,
+            sixs_rotation,
+        )
+    }
 }
 /// A item which is in a bin
 #[derive(Debug, Clone)]
@@ -30,10 +51,10 @@ pub struct ItemsPlaced {
 }
 impl ItemsPlaced {
     /// Default Constructor
-    pub const fn new(x: u32, y: u32, z: u32, item: Item) -> Self {
+    pub const fn new(position: Vector3<u32>, item: Item) -> Self {
         // Self { x, y, z, item }
         Self {
-            position: Vector3::new(x, y, z),
+            position: position,
             item,
         }
     }

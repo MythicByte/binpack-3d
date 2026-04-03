@@ -98,19 +98,18 @@ impl AlgorithmenFirst {
     #[must_use]
     fn fitness_score(
         weights: &AlgorithmenFirstFitnessValues,
-        bin: &Bin,
+        _bin: &Bin,
         item: &Item,
         space: &SpaceLeftBin,
         corner: &Corners,
-    ) -> u32 {
-        let space_left: u32 = (weights.space_weight
-            * (space.0 - (item.position.x * item.position.y * item.position.z)) as f32)
-            as u32;
-        let order = (weights.order_weight * item.order as f32) as u32;
-        let weight = (weights.weight_weight * item.weight as f32) as u32;
-        let height = item.position.z + corner.position.z;
+    ) -> f32 {
+        let space_left = weights.space_weight
+            * (space.0 - (item.position.x * item.position.y * item.position.z)) as f32;
+        let order = weights.order_weight * item.order as f32;
+        let weight = weights.weight_weight * item.weight as f32;
+        let height = (item.position.z + corner.position.z) as f32;
         // Downcasting the rounding errros are ignored
-        let final_result: u32 = space_left + order + weight + height;
+        let final_result: f32 = space_left + order + weight + height;
         final_result
     }
     /// Checks best placment
@@ -122,12 +121,12 @@ impl AlgorithmenFirst {
         space: &SpaceLeftBin,
         weights: &AlgorithmenFirstFitnessValues,
     ) -> Option<(Corners, usize)> {
-        let mut best_corner: Option<(Corners, u32, usize)> = None;
+        let mut best_corner: Option<(Corners, f32, usize)> = None;
         corners.iter().enumerate().for_each(|(index, x)| {
             let (fitness, placment) = Self::check_item(bin, item, x, space, weights);
             if let Some(corn) = &best_corner
                 && placment
-                && fitness > corn.1
+                && fitness > corn.1 as f32
             {
                 best_corner = Some((x.clone(), fitness, index));
             } else if placment && let None = best_corner {
@@ -152,12 +151,7 @@ impl AlgorithmenFirst {
         Self::get_corner(bin, &item, &corner, corner_list);
         bin.weight_currently += item.weight;
         space.0 -= &item.position.x * &item.position.y * &item.position.z;
-        let new_placed_item = ItemsPlaced::new(
-            corner.position.x,
-            corner.position.y,
-            corner.position.z,
-            item,
-        );
+        let new_placed_item = ItemsPlaced::new(corner.position, item);
         list_placed_items.push(new_placed_item);
         Ok(())
     }
@@ -168,7 +162,7 @@ impl AlgorithmenFirst {
         corner: &Corners,
         space: &SpaceLeftBin,
         weights: &AlgorithmenFirstFitnessValues,
-    ) -> (u32, bool) {
+    ) -> (f32, bool) {
         let x_check = bin.position.x >= (corner.position.x + item.position.x);
         let y_check = bin.position.y >= (corner.position.y + item.position.y);
         let z_check = bin.position.z >= (corner.position.z + item.position.z);
@@ -176,7 +170,7 @@ impl AlgorithmenFirst {
             let score = Self::fitness_score(weights, bin, item, space, &corner);
             return (score, true);
         }
-        (u32::MAX, false)
+        (f32::MAX, false)
     }
 }
 impl Algorithmen3DBinPackaging for AlgorithmenFirst {

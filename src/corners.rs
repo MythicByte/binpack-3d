@@ -6,3 +6,8 @@ pub struct Corners {
     /// The Position of a Item
     pub position: Vector3<u32>,
 }
+impl From<Vector3<u32>> for Corners {
+    fn from(value: Vector3<u32>) -> Self {
+        Self { position: value }
+    }
+}

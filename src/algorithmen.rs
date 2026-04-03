@@ -36,7 +36,7 @@ where
 }
 
 /// Errors for AlgorithmenFirst
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AlgorithmenError {
     /// Bin has for the packages not enough space left {0}
     #[error("Bin has for the packages not enough space left ")]
