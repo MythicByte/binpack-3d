@@ -204,7 +204,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
             return Ok(AlgorithmenCreation::NoProblems(Self {
                 items: input,
                 corners: one_corner,
-                space_left: space_left,
+                space_left,
                 placed_item: Vec::with_capacity(items_len),
                 fitness_weight: weight_fitenss,
                 collision_checker: AABBVersion1::new(bin.clone()),

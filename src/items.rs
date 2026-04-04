@@ -57,9 +57,6 @@ impl ItemsPlaced {
     /// Default Constructor
     pub const fn new(position: Vector3<u32>, item: Item) -> Self {
         // Self { x, y, z, item }
-        Self {
-            position: position,
-            item,
-        }
+        Self { position, item }
     }
 }

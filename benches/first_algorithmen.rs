@@ -5,13 +5,13 @@ use algorithmen_test3::{
     bin::Bin,
     first_algorithmen::AlgorithmenFirst,
     items::Item,
+    vector::Vector3,
 };
 use criterion::{
     Criterion,
     criterion_group,
     criterion_main,
 };
-use nalgebra::Vector3;
 use rand::{
     prelude::*,
     rngs::ChaCha20Rng,

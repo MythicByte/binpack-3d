@@ -3,8 +3,8 @@ use algorithmen_test3::{
     bin::Bin,
     first_algorithmen::AlgorithmenFirst,
     items::Item,
+    vector::Vector3,
 };
-use nalgebra::Vector3;
 use rand::RngExt;
 
 // Helper to generate random valid items and bin
