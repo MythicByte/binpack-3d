@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@3d/three": "jsr:@3d/three@^0.166.0"
+  }
+}
