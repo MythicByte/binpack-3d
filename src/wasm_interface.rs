@@ -10,7 +10,11 @@ use crate::{
     },
     bin::Bin,
     first_algorithmen::AlgorithmenFirst,
-    items::Item,
+    items::{
+        Item,
+        ItemsPlaced,
+    },
+    sortedbin::SortedBin,
     vector::Vector3,
 };
 
@@ -143,24 +147,71 @@ impl From<ItemSpec> for Item {
 /// (Extend this later if you want to return full placement info.)
 #[wasm_bindgen]
 pub struct CalcResult {
-    items_placed: u32,
+    /// x
+    pub x: u32,
+    /// y
+    pub y: u32,
+    /// z
+    pub z: u32,
+    /// x
+    pub size_x: u32,
+    /// y
+    pub size_y: u32,
+    /// z
+    pub size_z: u32,
 }
 
 #[wasm_bindgen]
 impl CalcResult {
     #[wasm_bindgen(constructor)]
     ///
-    pub fn new(items_placed: u32) -> Self {
-        Self { items_placed }
+    pub fn new(x: u32, y: u32, z: u32, size_x: u32, size_y: u32, size_z: u32) -> Self {
+        Self {
+            x,
+            y,
+            z,
+            size_x,
+            size_y,
+            size_z,
+        }
     }
-
-    #[wasm_bindgen(getter)]
-    ///
-    pub fn items_placed(&self) -> u32 {
-        self.items_placed
+    #[wasm_bindgen]
+    /// Center point
+    pub fn center_point(&self) -> Center {
+        let x = (self.x + self.size_x) / 2;
+        let y = (self.y + self.size_y) / 2;
+        let z = (self.z + self.size_z) / 2;
+        Center::new(x, y, z)
     }
 }
-
+/// Center
+#[wasm_bindgen]
+pub struct Center {
+    /// x
+    pub x: u32,
+    /// y
+    pub y: u32,
+    /// z
+    pub z: u32,
+}
+impl Center {
+    /// Constructor
+    pub fn new(x: u32, y: u32, z: u32) -> Self {
+        Self { x, y, z }
+    }
+}
+impl From<ItemsPlaced> for CalcResult {
+    fn from(value: ItemsPlaced) -> Self {
+        Self {
+            x: value.position.x,
+            y: value.position.y,
+            z: value.position.z,
+            size_x: value.item.size_cube.x,
+            size_y: value.item.size_cube.y,
+            size_z: value.item.size_cube.z,
+        }
+    }
+}
 /// WASM-exported wrapper around your internal algorithm.
 /// This avoids wasm-bindgen needing to understand AlgorithmenFirst's internal fields.
 #[wasm_bindgen]
@@ -210,8 +261,13 @@ impl AlgorithmenFirstWasm {
     /// Run the algorithm.
     /// Currently returns only number of placed items.
     #[wasm_bindgen]
-    pub fn calculate(self) -> Result<CalcResult, JsError> {
+    pub fn calculate(self) -> Result<Vec<CalcResult>, JsError> {
         let sorted = self.inner.calculate().map_err(to_js_error)?;
-        Ok(CalcResult::new(sorted.items.len() as u32))
+        let output: Vec<CalcResult> = sorted
+            .items
+            .into_iter()
+            .map(|x| CalcResult::from(x))
+            .collect();
+        Ok(output)
     }
 }
