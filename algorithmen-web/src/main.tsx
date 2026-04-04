@@ -7,5 +7,6 @@ import szene from "./szene.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
+    <szene />
   </StrictMode>,
 );
