@@ -42,23 +42,25 @@ impl AABBVersion1 {
     pub fn add(&mut self, item: AABBVersion1CheckedItem, corner: &Corners) -> anyhow::Result<()> {
         let item = item.0;
         let mut position_minimum = corner.position.clone();
+        let x_position_minimum = position_minimum.clone();
         let mut position_maximum = position_minimum.clone() + item.size_cube;
+        let x_position_maximum = position_maximum.clone();
         position_minimum.divide_all(self.cell_size, 1);
         position_maximum.divide_all(self.cell_size, 1);
         let aabb = Vector6::new(
-            position_minimum.x.clone(),
-            position_minimum.y.clone(),
-            position_minimum.z.clone(),
-            position_maximum.x.clone(),
-            position_maximum.y.clone(),
-            position_maximum.z.clone(),
+            x_position_minimum.x.clone(),
+            x_position_minimum.y.clone(),
+            x_position_minimum.z.clone(),
+            x_position_maximum.x.clone(),
+            x_position_maximum.y.clone(),
+            x_position_maximum.z.clone(),
         );
-        let end_x = position_maximum.x.saturating_sub(1).max(position_minimum.x);
-        let end_y = position_maximum.y.saturating_sub(1).max(position_minimum.y);
-        let end_z = position_maximum.z.saturating_sub(1).max(position_minimum.z);
-        for x in position_minimum.x..end_x {
-            for y in position_minimum.y..end_y {
-                for z in position_minimum.z..end_z {
+        let end_x = position_maximum.x;
+        let end_y = position_maximum.y;
+        let end_z = position_maximum.z;
+        for x in position_minimum.x..=end_x {
+            for y in position_minimum.y..=end_y {
+                for z in position_minimum.z..=end_z {
                     self.grid
                         .entry((x, y, z))
                         .or_insert_with(Vec::new)
@@ -76,22 +78,24 @@ impl AABBVersion1 {
     ) -> anyhow::Result<Option<AABBVersion1CheckedItem>> {
         let mut position_minimum = corner.position.clone();
         let mut position_maximum = position_minimum.clone() + item.size_cube.clone();
+        let x_position_minimum = position_minimum.clone();
+        let x_position_maximum = position_maximum.clone();
         position_minimum.divide_all(self.cell_size, 1);
         position_maximum.divide_all(self.cell_size, 1);
-        let end_x = position_maximum.x.saturating_sub(1).max(position_minimum.x);
-        let end_y = position_maximum.y.saturating_sub(1).max(position_minimum.y);
-        let end_z = position_maximum.z.saturating_sub(1).max(position_minimum.z);
-        for x in position_minimum.x..end_x {
-            for y in position_minimum.y..end_y {
-                for z in position_minimum.z..end_z {
+        let end_x = position_maximum.x;
+        let end_y = position_maximum.y;
+        let end_z = position_maximum.z;
+        for x in position_minimum.x..=end_x {
+            for y in position_minimum.y..=end_y {
+                for z in position_minimum.z..=end_z {
                     if let Some(existing) = self.grid.get(&(x, y, z)) {
                         for existing_vector6 in existing {
-                            let overlay_x = position_minimum.x < existing_vector6.w
-                                && existing_vector6.x < position_maximum.x;
-                            let overlay_y = position_minimum.y < existing_vector6.a
-                                && existing_vector6.y < position_maximum.y;
-                            let overlay_z = position_minimum.z < existing_vector6.b
-                                && existing_vector6.z < position_maximum.z;
+                            let overlay_x = x_position_minimum.x < existing_vector6.w
+                                && existing_vector6.x < x_position_maximum.x;
+                            let overlay_y = x_position_minimum.y < existing_vector6.a
+                                && existing_vector6.y < x_position_maximum.y;
+                            let overlay_z = x_position_minimum.z < existing_vector6.b
+                                && existing_vector6.z < x_position_maximum.z;
                             if overlay_x && overlay_y && overlay_z {
                                 return Ok(None);
                             }

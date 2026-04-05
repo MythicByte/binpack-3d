@@ -36,6 +36,42 @@ pub struct SecondAlgorithmen {
     corners: HashSet<Corners>,
 }
 impl SecondAlgorithmen {
+    fn is_support_under_it(items_placed: &Vec<ItemsPlaced>, item: &Item, point: &Corners) -> bool {
+        // on the ground
+        if point.position.y == 0 {
+            return true;
+        }
+        // Candidate footprint (half-open [min, max))
+        let min_x = point.position.x;
+        let max_x = point.position.x + item.size_cube.x;
+        let min_z = point.position.z;
+        let max_z = point.position.z + item.size_cube.z;
+
+        items_placed.iter().any(|p| {
+            // Must sit exactly on top of this item
+            let top_y = p.position.y + p.item.size_cube.y;
+            if top_y != point.position.y {
+                return false;
+            }
+
+            // Support item's footprint
+            let p_min_x = p.position.x;
+            let p_max_x = p.position.x + p.item.size_cube.x;
+            let p_min_z = p.position.z;
+            let p_max_z = p.position.z + p.item.size_cube.z;
+
+            let overlap_x = min_x < p_max_x && p_min_x < max_x;
+            let overlap_z = min_z < p_max_z && p_min_z < max_z;
+
+            overlap_x && overlap_z
+        })
+    }
+    /// if it fits in the bin
+    fn fits_in_bin(bin: &Bin, corner: &Corners, item: &Item) -> bool {
+        corner.position.x + item.size_cube.x <= bin.position.x
+            && corner.position.y + item.size_cube.y <= bin.position.y
+            && corner.position.z + item.size_cube.z <= bin.position.z
+    }
     /// Minimum is better
     fn score(bin: &Bin, item: &Item, point: &Corners) -> f32 {
         let x = ((bin.position.x + item.size_cube.x) as f32 / (bin.position.x as f32))
@@ -43,7 +79,7 @@ impl SecondAlgorithmen {
         let y = ((bin.position.y + item.size_cube.y) as f32 / bin.position.y as f32)
             + item.weight as f32;
         let z = ((bin.position.z + item.size_cube.z) as f32 / bin.position.z as f32);
-        x + y + z
+        (x * 10.0) + (y * 100.0) + z
     }
     /// Find best point to place
     fn find_best_point_to_place(
@@ -51,6 +87,7 @@ impl SecondAlgorithmen {
         item: Item,
         aabb: &AABBVersion1,
         bin: &Bin,
+        placed_items: &Vec<ItemsPlaced>,
     ) -> Option<(Option<AABBVersion1CheckedItem>, f32, Corners)> {
         let all_items_rotated = item.rotation_v2();
         all_items_rotated
@@ -60,6 +97,12 @@ impl SecondAlgorithmen {
                     .par_iter()
                     .cloned()
                     .filter_map(|x_corner| {
+                        // if outer bounds ignore
+                        if !Self::fits_in_bin(bin, &x_corner, &x_item)
+                            || !Self::is_support_under_it(placed_items, &x_item, &x_corner)
+                        {
+                            return None;
+                        }
                         let check = aabb.check_item(x_item.clone(), &x_corner).ok();
                         let score = Self::score(bin, &x_item, &x_corner);
                         if let Some(check) = check {
@@ -83,11 +126,27 @@ impl SecondAlgorithmen {
         point: Corners,
         item: crate::aabb::AABBVersion1CheckedItem,
         aabb: &mut AABBVersion1,
-    ) -> anyhow::Result<ItemsPlaced> {
+    ) -> anyhow::Result<(ItemsPlaced, Vec<Corners>)> {
         let _ = aabb.add(item.clone(), &point);
         let _ = self.corners.remove(&point);
+        let one_corner = Corners::new(
+            point.position.x + item.0.size_cube.x,
+            point.position.y,
+            point.position.z,
+        );
+        let second_pointer = Corners::new(
+            point.position.x,
+            item.0.size_cube.y + point.position.y,
+            point.position.z,
+        );
+        let three_pointer = Corners::new(
+            point.position.x,
+            point.position.y,
+            item.0.size_cube.z + point.position.z,
+        );
+        let new_corners = vec![one_corner, second_pointer, three_pointer];
         let new_item = ItemsPlaced::new(point.position, item.0);
-        Ok(new_item)
+        Ok((new_item, new_corners))
     }
 }
 impl Algorithmen3DBinPackaging for SecondAlgorithmen {
@@ -135,8 +194,8 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         let item = mem::take(&mut self.items);
         let (mut keep, remove): (Vec<Item>, Vec<Item>) = item.into_par_iter().partition(|x| {
             x.size_cube.x < self.bin.position.x
-                || x.size_cube.y < self.bin.position.y
-                || x.size_cube.z < self.bin.position.z
+                && x.size_cube.y < self.bin.position.y
+                && x.size_cube.z < self.bin.position.z
         });
         keep.sort_unstable_by(|a, b| a.order.cmp(&b.order).then_with(|| a.weight.cmp(&b.weight)));
         // takes item
@@ -148,14 +207,21 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         // Takes checker
         let mut aabb = mem::take(&mut self.aabb);
         item.into_iter().for_each(|x| {
-            let result = Self::find_best_point_to_place(&self.corners, x.clone(), &aabb, &self.bin);
+            let result = Self::find_best_point_to_place(
+                &self.corners,
+                x.clone(),
+                &aabb,
+                &self.bin,
+                &placed_item,
+            );
             if let Some(unoetig) = result
                 && let Some(checked_item) = unoetig.0
             {
-                let item_finished =
+                let (item_finished, new_corners) =
                     Self::place_item_in_bin(&mut self, unoetig.2, checked_item, &mut aabb)
                         .expect("Error placing");
                 placed_item.push(item_finished);
+                self.corners.extend(new_corners);
             } else {
                 removed_items.push(x);
             }
