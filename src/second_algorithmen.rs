@@ -287,9 +287,10 @@ mod tests {
     proptest! {
         #[test]
         fn second_algorithmen_score(x in 0u32..100,y in 0u32..100,z in 0u32..100) {
-            let result = SecondAlgorithmen::score(&Bin::new(Vector3::new(x, y, z), 1000, 0), &Item::new(Vector3::new(x, y, z), 10, 1), &Corners::new(0,0,0));
+            let result = SecondAlgorithmen::score(&Bin::new(Vector3::new(x + 100, y + 100, z + 100), 1000, 0), &Item::new(Vector3::new(x, y, z), 10, 1), &Corners::new(0,0,0));
             dbg!(&result);
             prop_assert!(result >= 0.0);
+            prop_assert!(!result.is_nan());
             }
     }
 }
