@@ -33,7 +33,7 @@ impl AABBVersion1 {
     pub fn new() -> Self {
         Self {
             grid: HashMap::new(),
-            cell_size: 10,
+            cell_size: 8,
         }
     }
     /// Add a new value
