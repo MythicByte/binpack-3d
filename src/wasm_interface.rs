@@ -158,6 +158,8 @@ pub struct CalcResult {
     pub size_y: u32,
     /// z
     pub size_z: u32,
+    /// ignore
+    pub ignore: usize,
 }
 
 #[wasm_bindgen]
@@ -172,6 +174,7 @@ impl CalcResult {
             size_x,
             size_y,
             size_z,
+            ignore: 0,
         }
     }
     #[wasm_bindgen]
@@ -208,6 +211,7 @@ impl From<ItemsPlaced> for CalcResult {
             size_x: value.item.size_cube.x,
             size_y: value.item.size_cube.y,
             size_z: value.item.size_cube.z,
+            ignore: 0,
         }
     }
 }
@@ -258,10 +262,15 @@ impl AlgorithmenFirstWasm {
     #[wasm_bindgen]
     pub fn calculate(self) -> Result<Vec<CalcResult>, JsError> {
         let sorted = self.inner.calculate().map_err(to_js_error)?;
+        let ignore = sorted.removed_items.len();
         let output: Vec<CalcResult> = sorted
             .items
             .into_iter()
             .map(|x| CalcResult::from(x))
+            .map(|mut x| {
+                x.ignore = ignore;
+                x
+            })
             .collect();
         Ok(output)
     }
