@@ -18,7 +18,7 @@ pub struct SortedBin {
 }
 impl SortedBin {
     /// Creates basic items
-    pub fn new(bin: Bin, items: Vec<ItemsPlaced>) -> Self {
+    pub fn new(bin: Bin, items: Vec<ItemsPlaced>, removed_tems: Vec<Item>) -> Self {
         Self {
             bin,
             items,

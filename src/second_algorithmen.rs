@@ -74,11 +74,14 @@ impl SecondAlgorithmen {
     }
     /// Minimum is better
     fn score(bin: &Bin, item: &Item, point: &Corners) -> f32 {
-        let x = ((bin.position.x + item.size_cube.x) as f32 / (bin.position.x as f32))
+        let x = ((bin.position.x + item.size_cube.x + point.position.x) as f32
+            / (bin.position.x as f32))
             + item.order as f32;
-        let y = ((bin.position.y + item.size_cube.y) as f32 / bin.position.y as f32)
+        let y = ((bin.position.y + item.size_cube.y + point.position.y) as f32
+            / bin.position.y as f32)
             + item.weight as f32;
-        let z = ((bin.position.z + item.size_cube.z) as f32 / bin.position.z as f32);
+        let z =
+            ((bin.position.z + item.size_cube.z + point.position.z) as f32 / bin.position.z as f32);
         (x * 10.0) + (y * 100.0) + z
     }
     /// Find best point to place
@@ -226,6 +229,38 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
                 removed_items.push(x);
             }
         });
-        Ok(SortedBin::new(self.bin, placed_item))
+        Ok(SortedBin::new(self.bin, placed_item, removed_items))
+    }
+}
+#[cfg(test)]
+mod tests {
+    use hashbrown::HashSet;
+
+    use crate::{
+        algorithmen::Algorithmen3DBinPackaging,
+        bin::Bin,
+        items::Item,
+        second_algorithmen::SecondAlgorithmen,
+        vector::Vector3,
+    };
+
+    #[test]
+    fn bin_fix_v2() {
+        let bin = Bin::new(Vector3::new(1000, 1000, 1000), 100000, 0);
+        let item = Item::new(Vector3::new(10, 10, 10), 10, 1);
+        let mut list = Vec::with_capacity(1000);
+        for _ in 0..100 {
+            list.push(item.clone());
+        }
+        let algorithmen = SecondAlgorithmen::create_algorithmen(list, bin).unwrap();
+        let result = algorithmen.calculate().unwrap();
+        assert_eq!(100, result.items.len());
+        assert_eq!(0, result.removed_items.len());
+        let mut hash_check: HashSet<Vector3<u32>> = HashSet::with_capacity(result.items.len());
+        for i in result.items {
+            if !hash_check.insert(i.position) {
+                panic!("Same corner was used");
+            }
+        }
     }
 }
