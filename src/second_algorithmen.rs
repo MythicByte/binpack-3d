@@ -10,6 +10,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use web_sys::console;
 
 use crate::{
     aabb::{
@@ -140,6 +141,11 @@ impl SecondAlgorithmen {
             item.0.size_cube.z + point.position.z,
         );
         let new_corners = vec![one_corner, second_pointer, three_pointer];
+        // Checks if a corner is in the bin
+        let new_corners = new_corners
+            .into_iter()
+            .filter_map(|x| aabb.point_is_free(&x).then(|| x))
+            .collect();
         let new_item = ItemsPlaced::new(point.position, item.0);
         Ok((new_item, new_corners))
     }
@@ -192,9 +198,9 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
     ) -> Result<crate::sortedbin::SortedBin, crate::algorithmen::AlgorithmenError> {
         let item = mem::take(&mut self.items);
         let (mut keep, remove): (Vec<Item>, Vec<Item>) = item.into_par_iter().partition(|x| {
-            x.size_cube.x < self.bin.position.x
-                && x.size_cube.y < self.bin.position.y
-                && x.size_cube.z < self.bin.position.z
+            x.size_cube.x <= self.bin.position.x
+                && x.size_cube.y <= self.bin.position.y
+                && x.size_cube.z <= self.bin.position.z
         });
         keep.sort_unstable_by(|a, b| a.order.cmp(&b.order).then_with(|| a.weight.cmp(&b.weight)));
         // takes item

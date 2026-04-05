@@ -7,7 +7,10 @@ use serde::{
 use crate::{
     corners::Corners,
     items::Item,
-    vector::Vector6,
+    vector::{
+        Vector3,
+        Vector6,
+    },
 };
 
 /// A collision checker
@@ -103,6 +106,27 @@ impl AABBVersion1 {
             }
         }
         Ok(Some(AABBVersion1CheckedItem(item)))
+    }
+    /// checks if a point is valid
+    pub fn point_is_free(&self, p: &Corners) -> bool {
+        let point = p.clone().position;
+        let mut cell = p.position;
+        cell.divide_all(self.cell_size, 1);
+
+        if let Some(existing) = self.grid.get(&(cell.x, cell.y, cell.z)) {
+            for e in existing {
+                let inside = point.x >= e.x
+                    && point.x < e.w
+                    && point.y >= e.y
+                    && point.y < e.a
+                    && point.z >= e.z
+                    && point.z < e.b;
+                if inside {
+                    return false;
+                }
+            }
+        }
+        true
     }
 }
 #[cfg(test)]

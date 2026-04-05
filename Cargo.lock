@@ -27,6 +27,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
