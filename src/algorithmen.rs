@@ -16,10 +16,7 @@ where
 {
     /// A Algorithmen Input where all packages are there
     #[must_use]
-    fn create_algorithmen(
-        input: Vec<Item>,
-        bin: Bin,
-    ) -> Result<AlgorithmenCreation<Self>, AlgorithmenError>;
+    fn create_algorithmen(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError>;
     /// Add Items Later
     #[must_use]
     fn add_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError>;
@@ -47,20 +44,4 @@ pub enum AlgorithmenError {
     /// Item was to big for item
     #[error("Item was to big for item")]
     ItemToBigForBin,
-}
-/// For a new Algorithmen the correct response
-#[derive(Debug, Clone)]
-pub enum AlgorithmenCreation<T>
-where
-    T: Algorithmen3DBinPackaging,
-{
-    /// Bin could be created with items, but there where to much
-    WorkedButToMuchItems {
-        /// The algorithmen with items
-        algorithmen: T,
-        /// The items which has not been going in the bin
-        items_to_much: Vec<Item>,
-    },
-    /// Worked with not problem
-    NoProblems(T),
 }

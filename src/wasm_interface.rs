@@ -5,7 +5,6 @@ use wasm_bindgen::prelude::*;
 use crate::{
     algorithmen::{
         Algorithmen3DBinPackaging,
-        AlgorithmenCreation,
         AlgorithmenError,
     },
     bin::Bin,
@@ -14,7 +13,6 @@ use crate::{
         Item,
         ItemsPlaced,
     },
-    sortedbin::SortedBin,
     vector::Vector3,
 };
 
@@ -229,11 +227,7 @@ impl AlgorithmenFirstWasm {
         let items: Vec<Item> = input.into_iter().map(Into::into).collect();
         let bin: Bin = bin.into();
 
-        let inner = match AlgorithmenFirst::create_algorithmen(items, bin) {
-            Ok(AlgorithmenCreation::NoProblems(a)) => a,
-            Ok(AlgorithmenCreation::WorkedButToMuchItems { algorithmen, .. }) => algorithmen,
-            Err(e) => return Err(to_js_error(e)),
-        };
+        let inner = AlgorithmenFirst::create_algorithmen(items, bin)?;
 
         Ok(Self { inner })
     }

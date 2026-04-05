@@ -8,7 +8,7 @@ anyhow = "1.0.102"
 hashbrown = { version = "0.16.1", features = ["rayon", "serde"] }
 num-traits = "0.2.19"
 rayon = "1.11.0"
-serde = { version = "1.0.228", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
 thiserror = "2.0.18"
 tracing = "0.1.44"
 wasm-bindgen = "0.2.117"

@@ -38,10 +38,10 @@ where
         Self { x, y, z }
     }
     ///
-    pub fn divide_all(&mut self, divide: T) {
-        self.x /= divide;
-        self.y /= divide;
-        self.z /= divide;
+    pub fn divide_all(&mut self, divide: T, minus: T) {
+        self.x = (self.x.saturating_sub(minus)) / divide;
+        self.y = (self.y.saturating_sub(minus)) / divide;
+        self.z = (self.z.saturating_sub(minus)) / divide;
     }
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]

@@ -1,8 +1,12 @@
+use std::ops::Div;
+
 use crate::{
-    aabb::AABBVersion1,
+    aabb::{
+        AABBVersion1,
+        AABBVersion1CheckedItem,
+    },
     algorithmen::{
         Algorithmen3DBinPackaging,
-        AlgorithmenCreation,
         AlgorithmenError,
     },
     bin::{
@@ -27,10 +31,8 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use wasm_bindgen::prelude::wasm_bindgen;
 
 /// The first algorithmen
-#[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AlgorithmenFirst {
     items: Vec<Item>,
@@ -40,6 +42,7 @@ pub struct AlgorithmenFirst {
     placed_item: Vec<ItemsPlaced>,
     fitness_weight: AlgorithmenFirstFitnessValues,
     collision_checker: AABBVersion1,
+    removed_items_no_place: Vec<Item>,
 }
 /// For the evaulate where to place the different weights, if chossen wrong items can be miss placed where sub optimal
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -103,6 +106,8 @@ impl AlgorithmenFirst {
         corners.extend(new_corners);
     }
     /// Gives a index score for where to place
+    ///
+    /// Lower Score means better
     #[must_use]
     fn fitness_score(
         weights: &AlgorithmenFirstFitnessValues,
@@ -113,12 +118,16 @@ impl AlgorithmenFirst {
         order: u32,
         weight: u32,
     ) -> f32 {
-        let space_left = weights.space_weight * (space.0 - (item.x * item.y * item.z)) as f32;
-        let order = weights.order_weight * order as f32;
-        let weight = weights.weight_weight * weight as f32;
-        let height = (item.z + corner.position.z) as f32;
-        // Downcasting the rounding errros are ignored
-        let final_result: f32 = space_left + order + weight + height;
+        // let space_left = weights.space_weight * (space.0 - (item.x * item.y * item.z)) as f32;
+        let order = ((bin.position.x as f32)
+            - ((weights.order_weight * order as f32) + item.x as f32))
+            / bin.position.x as f32;
+        let weight = ((bin.position.y)
+            .saturating_sub(weights.weight_weight as u32 * weight + corner.position.y)
+            as f32)
+            .div(bin.position.y as f32);
+        let first = bin.position.z.saturating_sub(item.z) as f32 / bin.position.z as f32;
+        let final_result: f32 = order + weight + first;
         final_result
     }
     /// Checks best placment
@@ -131,22 +140,29 @@ impl AlgorithmenFirst {
         weights: &AlgorithmenFirstFitnessValues,
         order: u32,
         weight: u32,
-    ) -> Option<(Corners, usize)> {
-        let mut best_corner: Option<(Corners, f32, usize)> = None;
-        corners.iter().enumerate().for_each(|(index, x)| {
+        aabb: &mut AABBVersion1,
+    ) -> Option<(Corners, f32, AABBVersion1CheckedItem)> {
+        let mut best_corner: Option<(Corners, f32, AABBVersion1CheckedItem)> = None;
+        corners.iter().for_each(|(x)| {
             let (fitness, placment) = Self::check_item(bin, item, x, space, weights, order, weight);
-            if let Some(corn) = &best_corner
-                && placment
-                && fitness > corn.1 as f32
-            {
-                best_corner = Some((x.clone(), fitness, index));
-            } else if placment && let None = best_corner {
-                best_corner = Some((x.clone(), fitness, index));
+            let checker = match aabb.check_item(Item::new(*item, weight, order), x) {
+                Ok(x) => x,
+                Err(_) => None,
+            };
+            if let Some(check) = checker {
+                if let Some(corn) = &best_corner
+                    && placment
+                    && fitness < corn.1 as f32
+                {
+                    best_corner = Some((x.clone(), fitness, check));
+                } else if placment && let None = best_corner {
+                    best_corner = Some((x.clone(), fitness, check));
+                }
             }
         });
-        return match best_corner {
-            Some(x) => Some((x.0, x.2)),
-            None => None,
+        return match (best_corner) {
+            Some(x) => Some(x),
+            _ => None,
         };
     }
     /// Places a Item in the Bin
@@ -154,15 +170,20 @@ impl AlgorithmenFirst {
     fn place_item(
         corner: Corners,
         bin: &mut Bin,
-        item: Item,
+        item: AABBVersion1CheckedItem,
         space: &mut SpaceLeftBin,
         corner_list: &mut HashSet<Corners>,
         list_placed_items: &mut Vec<ItemsPlaced>,
+        checker: &mut AABBVersion1,
     ) -> Result<(), AlgorithmenError> {
-        Self::get_corner(bin, &item, &corner, corner_list);
-        bin.weight_currently += item.weight;
-        space.0 -= &item.size_cube.x * &item.size_cube.y * &item.size_cube.z;
-        let new_placed_item = ItemsPlaced::new(corner.position, item);
+        Self::get_corner(bin, &item.0, &corner, corner_list);
+        bin.weight_currently += item.0.weight;
+        space.0 -= &item.0.size_cube.x * &item.0.size_cube.y * &item.0.size_cube.z;
+        let new_placed_item = ItemsPlaced::new(corner.position, item.0.clone());
+        // # TODO fix later
+        let _ = checker
+            .add(item, &corner)
+            .expect("Adding to checker failed only for buildin");
         list_placed_items.push(new_placed_item);
         Ok(())
     }
@@ -190,26 +211,24 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     /// Creates a new Algorithmen with the basic infos
     ///
     /// # TODO If a Item is to big for the Bin remove it
-    fn create_algorithmen(
-        input: Vec<Item>,
-        bin: Bin,
-    ) -> Result<AlgorithmenCreation<Self>, AlgorithmenError> {
+    fn create_algorithmen(input: Vec<Item>, bin: Bin) -> Result<Self, AlgorithmenError> {
         let (check, space_left) = Self::check_fit_quick(&input, &bin);
         // The output Vec needs for better performance the size pre allocated
         let items_len = input.len();
-        let weight_fitenss = AlgorithmenFirstFitnessValues::new(1f32, 1f32, 1f32);
+        let weight_fitenss = AlgorithmenFirstFitnessValues::new(1.0f32, 2.0f32, 1f32);
         let mut one_corner: HashSet<Corners> = HashSet::with_capacity(items_len);
         _ = one_corner.insert(Corners::new(0, 0, 0));
         if check {
-            return Ok(AlgorithmenCreation::NoProblems(Self {
+            return Ok(Self {
                 items: input,
                 corners: one_corner,
                 space_left,
                 placed_item: Vec::with_capacity(items_len),
                 fitness_weight: weight_fitenss,
-                collision_checker: AABBVersion1::new(bin.clone()),
+                collision_checker: AABBVersion1::new(),
                 Bin: bin,
-            }));
+                removed_items_no_place: Vec::new(),
+            });
         } else {
             return Err(AlgorithmenError::NotEnoughSpace);
         }
@@ -217,7 +236,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
 
     /// calculates the if space is even possible to store in the bin
     fn check_fit_quick(input: &[Item], bin: &Bin) -> (bool, SpaceLeftBin) {
-        let availabel_space = bin.position.x * bin.position.y * bin.position.z;
+        let availabel_space: u32 = bin.position.x * bin.position.y * bin.position.z;
         let space_used: u32 = {
             input
                 .par_iter()
@@ -237,7 +256,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         for item_iter in self.items.into_iter() {
             let get_all_rotations = item_iter.rotation();
             let corner = get_all_rotations
-                .into_par_iter()
+                .into_iter()
                 .filter_map(|x| {
                     Self::find_best_placment(
                         &self.Bin,
@@ -247,27 +266,33 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                         &self.fitness_weight,
                         item_iter.order,
                         item_iter.weight,
+                        &mut self.collision_checker,
                     )
                 })
-                .min_by_key(|x| x.1);
-            if let Some((corner_checked, index)) = corner {
+                .min_by(|x, b| {
+                    x.1.partial_cmp(&b.1)
+                        .unwrap_or_else(|| std::cmp::Ordering::Equal)
+                });
+            if let Some((corner_checked, _, checked)) = corner {
                 _ = self.corners.remove(&corner_checked);
                 let place = Self::place_item(
                     corner_checked,
                     &mut self.Bin,
-                    item_iter,
+                    checked,
                     &mut self.space_left,
                     &mut self.corners,
                     &mut self.placed_item,
+                    &mut self.collision_checker,
                 )?;
             } else {
-                return Err(AlgorithmenError::NotEnoughSpace);
+                self.removed_items_no_place.push(item_iter);
             }
         }
         // The Final Bin with the position Items inside
         Ok(SortedBin {
             bin: self.Bin,
             items: self.placed_item,
+            removed_items: self.removed_items_no_place,
         })
     }
 
@@ -303,5 +328,37 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 .sum()
         };
         availabel_space - space_used
+    }
+}
+#[cfg(test)]
+mod tests {
+    use hashbrown::HashSet;
+
+    use crate::{
+        algorithmen::Algorithmen3DBinPackaging,
+        bin::Bin,
+        first_algorithmen::AlgorithmenFirst,
+        items::Item,
+        vector::Vector3,
+    };
+
+    #[test]
+    fn bin_fix() {
+        let bin = Bin::new(Vector3::new(1000, 1000, 1000), 100000, 0);
+        let item = Item::new(Vector3::new(10, 10, 10), 10, 1);
+        let mut list = Vec::with_capacity(1000);
+        for _ in 0..100 {
+            list.push(item.clone());
+        }
+        let algorithmen = AlgorithmenFirst::create_algorithmen(list, bin).unwrap();
+        let result = algorithmen.calculate().unwrap();
+        assert_eq!(100, result.items.len());
+        assert_eq!(0, result.removed_items.len());
+        let mut hash_check: HashSet<Vector3<u32>> = HashSet::with_capacity(result.items.len());
+        for i in result.items {
+            if !hash_check.insert(i.position) {
+                panic!("Same corner was used");
+            }
+        }
     }
 }

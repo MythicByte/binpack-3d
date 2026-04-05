@@ -15,6 +15,8 @@ pub mod corners;
 pub mod first_algorithmen;
 /// A item
 pub mod items;
+/// Second algorithmen
+pub mod second_algorithmen;
 /// Finished Bin
 pub mod sortedbin;
 /// Vectors

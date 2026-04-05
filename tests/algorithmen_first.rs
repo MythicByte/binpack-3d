@@ -53,10 +53,7 @@ fn generate_valid_test_case() -> (Bin, Vec<Item>) {
 #[test]
 fn algorithmenfirst_random_valid() {
     let (bin, items) = generate_valid_test_case();
-    let algorithmen_in = match AlgorithmenFirst::create_algorithmen(items, bin).unwrap() {
-        algorithmen_test3::algorithmen::AlgorithmenCreation::NoProblems(x) => x,
-        _ => panic!("Expected valid test case"),
-    };
+    let algorithmen_in = AlgorithmenFirst::create_algorithmen(items, bin).unwrap();
     let result = algorithmen_in.calculate();
     dbg!(&result);
     assert!(result.is_ok());
@@ -98,24 +95,12 @@ fn algorithmenfirst_random_edge_cases() {
     let bin_size = Vector3::new(10, 10, 10);
     let bin = Bin::new(bin_size, 1000, 0);
     let item = Item::new(bin_size, 1000, 0);
-    let result = match AlgorithmenFirst::create_algorithmen(vec![item], bin).unwrap() {
-        algorithmen_test3::algorithmen::AlgorithmenCreation::WorkedButToMuchItems {
-            algorithmen,
-            items_to_much,
-        } => algorithmen,
-        algorithmen_test3::algorithmen::AlgorithmenCreation::NoProblems(x) => x,
-    };
+    let result = AlgorithmenFirst::create_algorithmen(vec![item], bin).unwrap();
     assert!(result.calculate().is_ok());
 
     // Test single item that fits
     let bin = Bin::new(Vector3::new(20, 20, 20), 8000, 0);
     let item = Item::new(Vector3::new(10, 10, 10), 100, 0);
-    let result = match AlgorithmenFirst::create_algorithmen(vec![item], bin).unwrap() {
-        algorithmen_test3::algorithmen::AlgorithmenCreation::WorkedButToMuchItems {
-            algorithmen,
-            items_to_much,
-        } => algorithmen,
-        algorithmen_test3::algorithmen::AlgorithmenCreation::NoProblems(x) => x,
-    };
+    let result = AlgorithmenFirst::create_algorithmen(vec![item], bin).unwrap();
     assert!(result.calculate().is_ok());
 }

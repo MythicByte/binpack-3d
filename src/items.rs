@@ -29,7 +29,6 @@ impl Item {
         let (x, y, z) = (self.size_cube.x, self.size_cube.y, self.size_cube.z);
         let first_rotation = Vector3::new(y, x, z);
         let second_rotation = Vector3::new(x, z, y);
-        let third_rotation = Vector3::new(x, z, y);
         let four_rotation = Vector3::new(z, x, y);
         let five_rotation = Vector3::new(y, z, x);
         let sixs_rotation = Vector3::new(z, y, x);
@@ -38,7 +37,24 @@ impl Item {
             normal_rotation,
             first_rotation,
             second_rotation,
-            third_rotation,
+            four_rotation,
+            five_rotation,
+            sixs_rotation,
+        ]
+    }
+    /// ratation v2
+    pub fn rotation_v2(&self) -> Vec<Item> {
+        let (x, y, z) = (self.size_cube.x, self.size_cube.y, self.size_cube.z);
+        let first_rotation = Item::new(Vector3::new(y, x, z), self.weight, self.order);
+        let second_rotation = Item::new(Vector3::new(x, z, y), self.weight, self.order);
+        let four_rotation = Item::new(Vector3::new(z, x, y), self.weight, self.order);
+        let five_rotation = Item::new(Vector3::new(y, z, x), self.weight, self.order);
+        let sixs_rotation = Item::new(Vector3::new(z, y, x), self.weight, self.order);
+        let normal_rotation = Item::new(Vector3::new(x, y, z), self.weight, self.order);
+        vec![
+            normal_rotation,
+            first_rotation,
+            second_rotation,
             four_rotation,
             five_rotation,
             sixs_rotation,
