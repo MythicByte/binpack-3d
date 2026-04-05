@@ -74,9 +74,9 @@ impl SecondAlgorithmen {
     }
     /// Minimum is better
     fn score(bin: &Bin, item: &Item, point: &Corners) -> f32 {
-        let x = (point.position.x + item.size_cube.x) as f32 / bin.position.x as f32;
-        let y = (point.position.y + item.size_cube.y) as f32 / bin.position.y as f32;
-        let z = (point.position.z + item.size_cube.z) as f32 / bin.position.z as f32;
+        let x = (point.position.x + item.size_cube.x) as f32 + 1.0 / (bin.position.x as f32) + 1.0;
+        let y = (point.position.y + item.size_cube.y) as f32 + 1.0 / (bin.position.y as f32) + 1.0;
+        let z = (point.position.z + item.size_cube.z) as f32 + 1.0 / (bin.position.z as f32) + 1.0;
         (x * 10.0) + (y * 100.0) + z
     }
     /// Find best point to place
@@ -234,10 +234,12 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
 #[cfg(test)]
 mod tests {
     use hashbrown::HashSet;
+    use proptest::prelude::*;
 
     use crate::{
         algorithmen::Algorithmen3DBinPackaging,
         bin::Bin,
+        corners::Corners,
         items::Item,
         second_algorithmen::SecondAlgorithmen,
         vector::Vector3,
@@ -281,5 +283,13 @@ mod tests {
                 panic!("Same corner was used");
             }
         }
+    }
+    proptest! {
+        #[test]
+        fn second_algorithmen_score(x in 0u32..100,y in 0u32..100,z in 0u32..100) {
+            let result = SecondAlgorithmen::score(&Bin::new(Vector3::new(x, y, z), 1000, 0), &Item::new(Vector3::new(x, y, z), 10, 1), &Corners::new(0,0,0));
+            dbg!(&result);
+            prop_assert!(result >= 0.0);
+            }
     }
 }
