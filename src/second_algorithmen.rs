@@ -10,6 +10,11 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use tracing::info;
+use web_sys::{
+    console,
+    js_sys::Math::log,
+};
 
 use crate::{
     aabb::{
@@ -80,13 +85,14 @@ impl SecondAlgorithmen {
         (x * 10.0) + (y * 100.0) + z
     }
     /// Find best point to place
+    /// # FIX error with None return for check items
     fn find_best_point_to_place(
         points: &HashSet<Corners>,
         item: Item,
         aabb: &AABBVersion1,
         bin: &Bin,
         placed_items: &Vec<ItemsPlaced>,
-    ) -> Option<(Option<AABBVersion1CheckedItem>, f32, Corners)> {
+    ) -> Option<(AABBVersion1CheckedItem, f32, Corners)> {
         let all_items_rotated = item.rotation_v2();
         all_items_rotated
             .into_par_iter()
@@ -101,7 +107,7 @@ impl SecondAlgorithmen {
                         {
                             return None;
                         }
-                        let check = aabb.check_item(x_item.clone(), &x_corner).ok();
+                        let check = aabb.check_item(x_item.clone(), &x_corner).ok().flatten();
                         let score = Self::score(bin, &x_item, &x_corner);
                         if let Some(check) = check {
                             return Some((check, score, x_corner));
@@ -216,15 +222,22 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
                 &self.bin,
                 &placed_item,
             );
-            if let Some(unoetig) = result
-                && let Some(checked_item) = unoetig.0
-            {
-                let (item_finished, new_corners) =
-                    Self::place_item_in_bin(&mut self, unoetig.2, checked_item, &mut aabb)
-                        .expect("Error placing");
+            // # TODO
+            // remove clone after testing
+            if let Some(checked_result) = result.clone() {
+                let (item_finished, new_corners) = Self::place_item_in_bin(
+                    &mut self,
+                    checked_result.2,
+                    checked_result.0,
+                    &mut aabb,
+                )
+                .expect("Error placing");
                 placed_item.push(item_finished);
                 self.corners.extend(new_corners);
             } else {
+                #[cfg(target_arch = "wasm32")]
+                console::log_1(&format!("{:?}", &result).into());
+                // println!("{:?}", &result);
                 removed_items.push(x);
             }
         });
