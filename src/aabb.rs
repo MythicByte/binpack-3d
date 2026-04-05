@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use hashbrown::HashMap;
 use serde::{
     Deserialize,
@@ -6,7 +5,6 @@ use serde::{
 };
 
 use crate::{
-    bin::Bin,
     corners::Corners,
     items::Item,
     vector::Vector6,
@@ -111,7 +109,6 @@ impl AABBVersion1 {
 mod tests {
     use crate::{
         aabb::AABBVersion1,
-        bin::Bin,
         corners::Corners,
         items::Item,
         vector::Vector3,

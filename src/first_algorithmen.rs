@@ -36,7 +36,7 @@ use serde::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AlgorithmenFirst {
     items: Vec<Item>,
-    Bin: Bin,
+    bin: Bin,
     corners: HashSet<Corners>,
     space_left: SpaceLeftBin,
     placed_item: Vec<ItemsPlaced>,
@@ -143,7 +143,7 @@ impl AlgorithmenFirst {
         aabb: &mut AABBVersion1,
     ) -> Option<(Corners, f32, AABBVersion1CheckedItem)> {
         let mut best_corner: Option<(Corners, f32, AABBVersion1CheckedItem)> = None;
-        corners.iter().for_each(|(x)| {
+        corners.iter().for_each(|x| {
             let (fitness, placment) = Self::check_item(bin, item, x, space, weights, order, weight);
             let checker = match aabb.check_item(Item::new(*item, weight, order), x) {
                 Ok(x) => x,
@@ -160,7 +160,7 @@ impl AlgorithmenFirst {
                 }
             }
         });
-        return match (best_corner) {
+        return match best_corner {
             Some(x) => Some(x),
             _ => None,
         };
@@ -226,7 +226,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 placed_item: Vec::with_capacity(items_len),
                 fitness_weight: weight_fitenss,
                 collision_checker: AABBVersion1::new(),
-                Bin: bin,
+                bin,
                 removed_items_no_place: Vec::new(),
             });
         } else {
@@ -259,7 +259,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 .into_iter()
                 .filter_map(|x| {
                     Self::find_best_placment(
-                        &self.Bin,
+                        &self.bin,
                         &x,
                         &self.corners,
                         &self.space_left,
@@ -275,9 +275,9 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 });
             if let Some((corner_checked, _, checked)) = corner {
                 _ = self.corners.remove(&corner_checked);
-                let place = Self::place_item(
+                let _ = Self::place_item(
                     corner_checked,
-                    &mut self.Bin,
+                    &mut self.bin,
                     checked,
                     &mut self.space_left,
                     &mut self.corners,
@@ -290,7 +290,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         }
         // The Final Bin with the position Items inside
         Ok(SortedBin {
-            bin: self.Bin,
+            bin: self.bin,
             items: self.placed_item,
             removed_items: self.removed_items_no_place,
         })
@@ -320,7 +320,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
     }
 
     fn space_left(&self) -> u32 {
-        let availabel_space = self.Bin.position.x * self.Bin.position.y * self.Bin.position.z;
+        let availabel_space = self.bin.position.x * self.bin.position.y * self.bin.position.z;
         let space_used: u32 = {
             self.items
                 .par_iter()

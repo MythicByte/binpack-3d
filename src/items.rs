@@ -3,10 +3,7 @@ use serde::{
     Serialize,
 };
 
-use crate::{
-    sortedbin::SortedBin,
-    vector::Vector3,
-};
+use crate::vector::Vector3;
 
 /// The Item which should be sorted in the bin
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]

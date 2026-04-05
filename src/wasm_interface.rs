@@ -8,7 +8,6 @@ use crate::{
         AlgorithmenError,
     },
     bin::Bin,
-    first_algorithmen::AlgorithmenFirst,
     items::{
         Item,
         ItemsPlaced,
