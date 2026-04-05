@@ -77,7 +77,8 @@ impl SecondAlgorithmen {
         let x = (point.position.x + item.size_cube.x) as f32 + 1.0 / (bin.position.x as f32) + 1.0;
         let y = (point.position.y + item.size_cube.y) as f32 + 1.0 / (bin.position.y as f32) + 1.0;
         let z = (point.position.z + item.size_cube.z) as f32 + 1.0 / (bin.position.z as f32) + 1.0;
-        (x * 10.0) + (y * 100.0) + z
+        let maximise_space_on_floor = (item.size_cube.x * item.size_cube.z) as f32;
+        (x) + (y * 100.0) + (10.0 * z) - maximise_space_on_floor
     }
     /// Find best point to place
     fn find_best_point_to_place(
