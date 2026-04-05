@@ -18,11 +18,11 @@ pub struct SortedBin {
 }
 impl SortedBin {
     /// Creates basic items
-    pub fn new(bin: Bin, items: Vec<ItemsPlaced>, removed_tems: Vec<Item>) -> Self {
+    pub fn new(bin: Bin, items: Vec<ItemsPlaced>, removed_items: Vec<Item>) -> Self {
         Self {
             bin,
             items,
-            removed_items: Vec::new(),
+            removed_items,
         }
     }
 }

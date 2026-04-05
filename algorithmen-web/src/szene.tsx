@@ -151,7 +151,7 @@ export default function Szene() {
         new ItemSpec(5, 5, 5, 10, 3),
         new ItemSpec(5, 5, 5, 10, 3),
       ];
-      for (let index = 0;index < 1000 - 10;index++) {
+      for (let index = 0;index < 100;index++) {
         items.push(new ItemSpec(5, 5, 5, 10, 3));
       }
 

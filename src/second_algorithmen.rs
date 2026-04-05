@@ -74,14 +74,9 @@ impl SecondAlgorithmen {
     }
     /// Minimum is better
     fn score(bin: &Bin, item: &Item, point: &Corners) -> f32 {
-        let x = ((bin.position.x + item.size_cube.x + point.position.x) as f32
-            / (bin.position.x as f32))
-            + item.order as f32;
-        let y = ((bin.position.y + item.size_cube.y + point.position.y) as f32
-            / bin.position.y as f32)
-            + item.weight as f32;
-        let z =
-            ((bin.position.z + item.size_cube.z + point.position.z) as f32 / bin.position.z as f32);
+        let x = (point.position.x + item.size_cube.x) as f32 / bin.position.x as f32;
+        let y = (point.position.y + item.size_cube.y) as f32 / bin.position.y as f32;
+        let z = (point.position.z + item.size_cube.z) as f32 / bin.position.z as f32;
         (x * 10.0) + (y * 100.0) + z
     }
     /// Find best point to place

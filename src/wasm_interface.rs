@@ -13,6 +13,7 @@ use crate::{
         Item,
         ItemsPlaced,
     },
+    second_algorithmen::SecondAlgorithmen,
     vector::Vector3,
 };
 
@@ -214,7 +215,7 @@ impl From<ItemsPlaced> for CalcResult {
 /// This avoids wasm-bindgen needing to understand AlgorithmenFirst's internal fields.
 #[wasm_bindgen]
 pub struct AlgorithmenFirstWasm {
-    inner: AlgorithmenFirst,
+    inner: SecondAlgorithmen,
 }
 
 #[wasm_bindgen]
@@ -227,7 +228,7 @@ impl AlgorithmenFirstWasm {
         let items: Vec<Item> = input.into_iter().map(Into::into).collect();
         let bin: Bin = bin.into();
 
-        let inner = AlgorithmenFirst::create_algorithmen(items, bin)?;
+        let inner = SecondAlgorithmen::create_algorithmen(items, bin)?;
 
         Ok(Self { inner })
     }
