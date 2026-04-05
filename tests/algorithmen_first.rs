@@ -89,8 +89,6 @@ fn algorithmenfirst_random_invalid() {
 
 #[test]
 fn algorithmenfirst_random_edge_cases() {
-    let mut rng = rand::rng();
-
     // Test exact fit
     let bin_size = Vector3::new(10, 10, 10);
     let bin = Bin::new(bin_size, 1000, 0);
