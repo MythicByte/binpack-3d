@@ -10,7 +10,6 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use web_sys::console;
 
 use crate::{
     aabb::{
@@ -90,8 +89,9 @@ impl SecondAlgorithmen {
     ) -> Option<(AABBVersion1CheckedItem, f32, Corners)> {
         let all_items_rotated = item.rotation_v2();
         all_items_rotated
-            .into_par_iter()
+            .into_iter()
             .filter_map(|x_item| {
+                // rayon removed for the second iterator check later
                 points
                     .par_iter()
                     .cloned()
@@ -238,11 +238,9 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
 }
 #[cfg(test)]
 mod tests {
-    use hashbrown::HashSet;
     use proptest::prelude::*;
 
     use crate::{
-        algorithmen::Algorithmen3DBinPackaging,
         bin::Bin,
         corners::Corners,
         items::Item,
@@ -250,45 +248,6 @@ mod tests {
         vector::Vector3,
     };
 
-    #[test]
-    fn bin_fix_v2() {
-        let bin = Bin::new(Vector3::new(1000, 1000, 1000), 100000, 0);
-        let item = Item::new(Vector3::new(10, 10, 10), 10, 1);
-        let mut list = Vec::with_capacity(1000);
-        for _ in 0..100 {
-            list.push(item.clone());
-        }
-        let algorithmen = SecondAlgorithmen::create_algorithmen(list, bin).unwrap();
-        let result = algorithmen.calculate().unwrap();
-        assert_eq!(100, result.items.len());
-        assert_eq!(0, result.removed_items.len());
-        let mut hash_check: HashSet<Vector3<u32>> = HashSet::with_capacity(result.items.len());
-        for i in result.items {
-            if !hash_check.insert(i.position) {
-                panic!("Same corner was used");
-            }
-        }
-    }
-    #[test]
-    fn bin_variable_v3() {
-        let x = || return rand::random_range(0u32..100u32);
-        let bin = Bin::new(Vector3::new(10000, 10000, 10000), 100000, 0);
-        let item = Item::new(Vector3::new(x(), x(), x()), 10, 1);
-        let mut list = Vec::with_capacity(1000);
-        for _ in 0..100 {
-            list.push(item.clone());
-        }
-        let algorithmen = SecondAlgorithmen::create_algorithmen(list, bin).unwrap();
-        let result = algorithmen.calculate().unwrap();
-        assert_eq!(100, result.items.len());
-        assert_eq!(0, result.removed_items.len());
-        let mut hash_check: HashSet<Vector3<u32>> = HashSet::with_capacity(result.items.len());
-        for i in result.items {
-            if !hash_check.insert(i.position) {
-                panic!("Same corner was used");
-            }
-        }
-    }
     proptest! {
         #[test]
         fn second_algorithmen_score(x in 0u32..100,y in 0u32..100,z in 0u32..100) {

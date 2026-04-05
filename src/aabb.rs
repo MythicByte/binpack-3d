@@ -7,10 +7,7 @@ use serde::{
 use crate::{
     corners::Corners,
     items::Item,
-    vector::{
-        Vector3,
-        Vector6,
-    },
+    vector::Vector6,
 };
 
 /// A collision checker
