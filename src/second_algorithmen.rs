@@ -10,11 +10,6 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use tracing::info;
-use web_sys::{
-    console,
-    js_sys::Math::log,
-};
 
 use crate::{
     aabb::{
@@ -85,7 +80,6 @@ impl SecondAlgorithmen {
         (x * 10.0) + (y * 100.0) + z
     }
     /// Find best point to place
-    /// # FIX error with None return for check items
     fn find_best_point_to_place(
         points: &HashSet<Corners>,
         item: Item,
@@ -107,12 +101,9 @@ impl SecondAlgorithmen {
                         {
                             return None;
                         }
-                        let check = aabb.check_item(x_item.clone(), &x_corner).ok().flatten();
+                        let check = aabb.check_item(x_item.clone(), &x_corner).ok().flatten()?;
                         let score = Self::score(bin, &x_item, &x_corner);
-                        if let Some(check) = check {
-                            return Some((check, score, x_corner));
-                        }
-                        None
+                        return Some((check, score, x_corner));
                     })
                     .min_by(|a, b| {
                         a.1.partial_cmp(&b.1)
@@ -222,9 +213,7 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
                 &self.bin,
                 &placed_item,
             );
-            // # TODO
-            // remove clone after testing
-            if let Some(checked_result) = result.clone() {
+            if let Some(checked_result) = result {
                 let (item_finished, new_corners) = Self::place_item_in_bin(
                     &mut self,
                     checked_result.2,
@@ -235,9 +224,6 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
                 placed_item.push(item_finished);
                 self.corners.extend(new_corners);
             } else {
-                #[cfg(target_arch = "wasm32")]
-                console::log_1(&format!("{:?}", &result).into());
-                // println!("{:?}", &result);
                 removed_items.push(x);
             }
         });
