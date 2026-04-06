@@ -60,6 +60,10 @@ impl Item {
             sixs_rotation,
         ]
     }
+    /// get volume of a item
+    pub const fn volume_item(&self) -> u32 {
+        self.size_cube.x * self.size_cube.y * self.size_cube.z
+    }
 }
 /// A item which is in a bin
 #[derive(Debug, Clone, Serialize, Deserialize)]

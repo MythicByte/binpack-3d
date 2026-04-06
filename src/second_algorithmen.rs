@@ -1,5 +1,7 @@
-use core::f32;
-use std::mem;
+use std::{
+    mem,
+    u32,
+};
 
 use hashbrown::HashSet;
 use rayon::iter::{
@@ -18,7 +20,10 @@ use crate::{
         AABBVersion1CheckedItem,
     },
     algorithmen::Algorithmen3DBinPackaging,
-    bin::Bin,
+    bin::{
+        Bin,
+        SpaceLeftBin,
+    },
     corners::Corners,
     items::{
         Item,
@@ -35,6 +40,7 @@ pub struct SecondAlgorithmen {
     aabb: AABBVersion1,
     volume_left: u32,
     corners: HashSet<Corners>,
+    space_left: SpaceLeftBin,
 }
 impl SecondAlgorithmen {
     fn is_support_under_it(items_placed: &Vec<ItemsPlaced>, item: &Item, point: &Corners) -> bool {
@@ -169,13 +175,14 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         let mut hashset: HashSet<Corners> = HashSet::with_capacity(length);
         // ignore
         let _ = hashset.insert(Corners::new(0, 0, 0));
-
+        let total_volume = bin.position.x * bin.position.y * bin.position.z;
         Ok(Self {
             bin,
             items: input,
             aabb: AABBVersion1::new(),
             volume_left: volume,
             corners: hashset,
+            space_left: SpaceLeftBin(total_volume),
         })
     }
 
@@ -183,19 +190,27 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         todo!()
     }
 
-    fn remove_item(
-        &mut self,
-        input: Vec<Item>,
-    ) -> Result<(), crate::algorithmen::AlgorithmenError> {
-        todo!()
+    fn remove_item(&mut self, input: Vec<Item>) -> Result<(), Vec<Item>> {
+        todo!();
     }
 
     fn space_left(&self) -> u32 {
-        todo!()
+        self.volume_left
     }
 
     fn check_fit_quick(input: &[Item], bin: &Bin) -> (bool, crate::bin::SpaceLeftBin) {
-        todo!()
+        let bin_volume =
+            (bin.position.x * bin.position.y * bin.position.z).clamp(u32::MIN, u32::MAX);
+        let item_total_volume: u32 = input
+            .iter()
+            .map(|x| x.size_cube.x * x.size_cube.y * x.size_cube.z)
+            .sum();
+
+        let item_total_volume = item_total_volume.clamp(u32::MIN, u32::MAX);
+        let result = bin_volume - item_total_volume;
+        let result = SpaceLeftBin(result);
+        let check = result.0 > 0;
+        (check, result)
     }
 
     fn calculate(
@@ -225,15 +240,21 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
                 &placed_item,
             );
             if let Some(checked_result) = result {
-                let (item_finished, new_corners) = Self::place_item_in_bin(
+                if let Ok((item_finished, new_corners)) = Self::place_item_in_bin(
                     &mut self,
                     checked_result.2,
                     checked_result.0,
                     &mut aabb,
-                )
-                .expect("Error placing");
-                placed_item.push(item_finished);
-                self.corners.extend(new_corners);
+                ) {
+                    self.volume_left = self
+                        .space_left
+                        .0
+                        .saturating_sub(item_finished.item.volume_item());
+                    placed_item.push(item_finished);
+                    self.corners.extend(new_corners);
+                } else {
+                    removed_items.push(x);
+                }
             } else {
                 removed_items.push(x);
             }

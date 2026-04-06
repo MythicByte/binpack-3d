@@ -21,8 +21,9 @@ where
     #[must_use]
     fn add_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError>;
     /// Remove Item
+    /// If not fit give back items
     #[must_use]
-    fn remove_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError>;
+    fn remove_item(&mut self, input: Vec<Item>) -> Result<(), Vec<Item>>;
     /// If Space is left
     fn space_left(&self) -> u32;
     /// Checks if the Items can be in a bin, possible fast check

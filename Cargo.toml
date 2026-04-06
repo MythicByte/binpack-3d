@@ -3,6 +3,11 @@ name = "algorithmen_test3"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = ["second_algorithmen"]
+first_algorithmen = []
+second_algorithmen = []
+
 [dependencies]
 anyhow = "1.0.102"
 hashbrown = { version = "0.16.1", features = ["inline-more", "rayon", "serde"] }

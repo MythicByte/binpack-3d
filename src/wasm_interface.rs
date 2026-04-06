@@ -1,5 +1,3 @@
-// src/wasm_interface.rs
-
 use wasm_bindgen::prelude::*;
 
 use crate::{
@@ -247,7 +245,9 @@ impl AlgorithmenFirstWasm {
     #[wasm_bindgen]
     pub fn remove_item(&mut self, input: Vec<ItemSpec>) -> Result<(), JsError> {
         let items: Vec<Item> = input.into_iter().map(Into::into).collect();
-        self.inner.remove_item(items).map_err(to_js_error)
+        self.inner
+            .remove_item(items)
+            .map_err(|_| JsError::new(&format!("Removed item from algorithmen failed")))
     }
 
     /// Space left (calls your trait method)

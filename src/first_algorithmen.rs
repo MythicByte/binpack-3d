@@ -1,5 +1,3 @@
-use std::ops::Div;
-
 use crate::{
     aabb::{
         AABBVersion1,
@@ -113,7 +111,7 @@ impl AlgorithmenFirst {
         weights: &AlgorithmenFirstFitnessValues,
         bin: &Bin,
         item: &Vector3<u32>,
-        space: &SpaceLeftBin,
+        _space: &SpaceLeftBin,
         corner: &Corners,
         order: u32,
         weight: u32,
@@ -307,7 +305,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         }
     }
 
-    fn remove_item(&mut self, input: Vec<Item>) -> Result<(), AlgorithmenError> {
+    fn remove_item(&mut self, input: Vec<Item>) -> Result<(), Vec<Item>> {
         for value in input.iter() {
             if let Some(index) = self.items.iter().enumerate().find(|x| x.1 == value) {
                 _ = self.items.remove(index.0);

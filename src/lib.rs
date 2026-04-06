@@ -12,14 +12,17 @@ pub mod bin;
 /// The corner
 pub mod corners;
 /// The first algorithmen for placing items in a bin
+#[cfg(feature = "first_algorithmen")]
 pub mod first_algorithmen;
 /// A item
 pub mod items;
 /// Second algorithmen
+#[cfg(feature = "second_algorithmen")]
 pub mod second_algorithmen;
 /// Finished Bin
 pub mod sortedbin;
 /// Vectors
 pub mod vector;
 /// Wasm interface
+#[cfg(target_arch = "wasm32")]
 pub mod wasm_interface;
