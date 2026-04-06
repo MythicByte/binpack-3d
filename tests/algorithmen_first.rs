@@ -1,8 +1,8 @@
 use algorithmen_test3::{
     algorithmen::Algorithmen3DBinPackaging,
     bin::Bin,
-    first_algorithmen::AlgorithmenFirst,
     items::Item,
+    second_algorithmen::SecondAlgorithmen,
     vector::Vector3,
 };
 use rand::RngExt;
@@ -53,7 +53,7 @@ fn generate_valid_test_case() -> (Bin, Vec<Item>) {
 #[test]
 fn algorithmenfirst_random_valid() {
     let (bin, items) = generate_valid_test_case();
-    let algorithmen_in = AlgorithmenFirst::create_algorithmen(items, bin).unwrap();
+    let algorithmen_in = SecondAlgorithmen::create_algorithmen(items, bin).unwrap();
     let result = algorithmen_in.calculate();
     dbg!(&result);
     assert!(result.is_ok());
@@ -80,7 +80,7 @@ fn algorithmenfirst_random_invalid() {
     );
     let items = vec![item];
 
-    let result = AlgorithmenFirst::create_algorithmen(items, bin);
+    let result = SecondAlgorithmen::create_algorithmen(items, bin);
     dbg!(&result);
     assert!(
         result.unwrap_err() == algorithmen_test3::algorithmen::AlgorithmenError::NotEnoughSpace
@@ -93,12 +93,12 @@ fn algorithmenfirst_random_edge_cases() {
     let bin_size = Vector3::new(10, 10, 10);
     let bin = Bin::new(bin_size, 1000, 0);
     let item = Item::new(bin_size, 1000, 0);
-    let result = AlgorithmenFirst::create_algorithmen(vec![item], bin).unwrap();
+    let result = SecondAlgorithmen::create_algorithmen(vec![item], bin).unwrap();
     assert!(result.calculate().is_ok());
 
     // Test single item that fits
     let bin = Bin::new(Vector3::new(20, 20, 20), 8000, 0);
     let item = Item::new(Vector3::new(10, 10, 10), 100, 0);
-    let result = AlgorithmenFirst::create_algorithmen(vec![item], bin).unwrap();
+    let result = SecondAlgorithmen::create_algorithmen(vec![item], bin).unwrap();
     assert!(result.calculate().is_ok());
 }

@@ -62,15 +62,6 @@ impl AlgorithmenFirstFitnessValues {
         }
     }
 }
-impl Corners {
-    /// Creates a new corner
-    pub const fn new(x: u32, y: u32, z: u32) -> Self {
-        // Self { x, y, z }
-        Self {
-            position: Vector3::new(x, y, z),
-        }
-    }
-}
 impl AlgorithmenFirst {
     /// Get the newest availbel corners for spots
     ///

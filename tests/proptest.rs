@@ -1,8 +1,8 @@
 use algorithmen_test3::{
     algorithmen::Algorithmen3DBinPackaging,
     bin::Bin,
-    first_algorithmen::AlgorithmenFirst,
     items::Item,
+    second_algorithmen::SecondAlgorithmen,
     vector::Vector3,
 };
 use proptest::proptest;
@@ -15,7 +15,7 @@ proptest! {
         for _ in 0..x {
             item_list.push(item.clone());
         }
-        let mut algorithmus = AlgorithmenFirst::create_algorithmen(item_list, bin).unwrap();
+        let mut algorithmus = SecondAlgorithmen::create_algorithmen(item_list, bin).unwrap();
         let result = algorithmus.calculate().unwrap();
         // dbg!(&result);
     }
