@@ -154,7 +154,36 @@ impl SecondAlgorithmen {
             point.position.y,
             item.0.size_cube.z + point.position.z,
         );
-        let new_corners = vec![one_corner, second_pointer, three_pointer];
+        // Check if they improve acrousy, if not delete
+        let four_point = Corners::new(
+            point.position.x + item.0.size_cube.x,
+            point.position.y + item.0.size_cube.y,
+            point.position.z,
+        );
+        let five_point = Corners::new(
+            point.position.x + item.0.size_cube.x,
+            point.position.y,
+            point.position.z + item.0.size_cube.z,
+        );
+        let sichs_point = Corners::new(
+            point.position.x,
+            point.position.y + item.0.size_cube.y,
+            point.position.z + item.0.size_cube.z,
+        );
+        let seven_point = Corners::new(
+            point.position.x + item.0.size_cube.x,
+            point.position.y + item.0.size_cube.y,
+            point.position.z + item.0.size_cube.z,
+        );
+        let new_corners = vec![
+            one_corner,
+            second_pointer,
+            three_pointer,
+            four_point,
+            five_point,
+            sichs_point,
+            seven_point,
+        ];
         // Checks if a corner is in the bin
         let new_corners = new_corners
             .into_iter()
@@ -181,7 +210,7 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         Ok(Self {
             bin,
             items: input,
-            aabb: AABBVersion1::new(),
+            aabb: AABBVersion1::new(length),
             volume_left: volume,
             corners: hashset,
         })

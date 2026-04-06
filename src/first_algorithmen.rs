@@ -204,6 +204,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
         let weight_fitenss = AlgorithmenFirstFitnessValues::new(1.0f32, 2.0f32, 1f32);
         let mut one_corner: HashSet<Corners> = HashSet::with_capacity(items_len);
         _ = one_corner.insert(Corners::new(0, 0, 0));
+        let length = input.len();
         if check {
             return Ok(Self {
                 items: input,
@@ -211,7 +212,7 @@ impl Algorithmen3DBinPackaging for AlgorithmenFirst {
                 space_left,
                 placed_item: Vec::with_capacity(items_len),
                 fitness_weight: weight_fitenss,
-                collision_checker: AABBVersion1::new(),
+                collision_checker: AABBVersion1::new(length),
                 bin,
                 removed_items_no_place: Vec::new(),
             });

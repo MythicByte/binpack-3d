@@ -31,9 +31,9 @@ pub struct AABBVersion1CheckedItem(pub Item);
 
 impl AABBVersion1 {
     /// Creates a new AABB Checker
-    pub fn new() -> Self {
+    pub fn new(length: usize) -> Self {
         Self {
-            grid: HashMap::new(),
+            grid: HashMap::with_capacity(length),
             cell_size: 8,
         }
     }
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn check_no_collision_and_collision_same_item() {
-        let mut aabb = AABBVersion1::new();
+        let mut aabb = AABBVersion1::new(10 as usize);
         let item = Item::new(Vector3::new(10, 10, 10), 10, 0);
         // check with no item
 
