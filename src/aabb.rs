@@ -94,6 +94,7 @@ impl AABBVersion1 {
         let end_y = position_maximum.y;
         let end_z = position_maximum.z;
         iproduct!(
+            // Check later if = should be here
             position_minimum.x..=end_x,
             position_minimum.y..=end_y,
             position_minimum.z..=end_z
