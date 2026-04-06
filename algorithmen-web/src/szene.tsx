@@ -45,7 +45,7 @@ export default function Szene() {
         const ItemSpec = (wasm as any).ItemSpec;
         const Algo = (wasm as any).AlgorithmenFirstWasm;
 
-        const bin = new BinSpec(100+ Math.floor(Math.random() * 100), 100 + Math.floor(Math.random() * 100), 200 + Math.floor(Math.random() * 100), 100000, 0);
+        const bin = new BinSpec(100+ Math.floor(Math.random() * 1000), 100 + Math.floor(Math.random() * 1000), 200 + Math.floor(Math.random() * 1000), 100000, 0);
 
         const dims = {
           x: getNumberFieldOrGetter(bin, "x"),

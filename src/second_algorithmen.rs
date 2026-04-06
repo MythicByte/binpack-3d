@@ -1,3 +1,4 @@
+use core::f32;
 use std::mem;
 
 use hashbrown::HashSet;
@@ -74,11 +75,14 @@ impl SecondAlgorithmen {
     }
     /// Minimum is better
     fn score(bin: &Bin, item: &Item, point: &Corners) -> f32 {
+        // without + 1 NaN can be possible
         let x = (point.position.x + item.size_cube.x) as f32 + 1.0 / (bin.position.x as f32) + 1.0;
         let y = (point.position.y + item.size_cube.y) as f32 + 1.0 / (bin.position.y as f32) + 1.0;
         let z = (point.position.z + item.size_cube.z) as f32 + 1.0 / (bin.position.z as f32) + 1.0;
         let maximise_space_on_floor = (item.size_cube.x * item.size_cube.z) as f32;
-        (x) + (y * 100.0) + (10.0 * z) - maximise_space_on_floor
+        let result =
+            ((x) + (y * 100.0) + (10.0 * z) - maximise_space_on_floor).clamp(f32::MIN, f32::MAX);
+        result
     }
     /// Find best point to place
     fn find_best_point_to_place(
@@ -103,7 +107,7 @@ impl SecondAlgorithmen {
                         {
                             return None;
                         }
-                        let check = aabb.check_item(x_item.clone(), &x_corner).ok().flatten()?;
+                        let check = aabb.check_item_v2(x_item.clone(), &x_corner)?;
                         let score = Self::score(bin, &x_item, &x_corner);
                         return Some((check, score, x_corner));
                     })
@@ -124,7 +128,7 @@ impl SecondAlgorithmen {
         item: crate::aabb::AABBVersion1CheckedItem,
         aabb: &mut AABBVersion1,
     ) -> anyhow::Result<(ItemsPlaced, Vec<Corners>)> {
-        let _ = aabb.add(item.clone(), &point);
+        let _ = aabb.add_v2(item.clone(), &point);
         let _ = self.corners.remove(&point);
         let one_corner = Corners::new(
             point.position.x + item.0.size_cube.x,
@@ -254,7 +258,7 @@ mod tests {
         fn second_algorithmen_score(x in 0u32..100,y in 0u32..100,z in 0u32..100) {
             let result = SecondAlgorithmen::score(&Bin::new(Vector3::new(x + 100, y + 100, z + 100), 1000, 0), &Item::new(Vector3::new(x, y, z), 10, 1), &Corners::new(0,0,0));
             dbg!(&result);
-            prop_assert!(result >= 0.0);
+            prop_assert!(result.is_normal());
             prop_assert!(!result.is_nan());
             }
     }

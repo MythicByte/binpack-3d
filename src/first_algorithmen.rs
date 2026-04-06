@@ -145,10 +145,7 @@ impl AlgorithmenFirst {
         let mut best_corner: Option<(Corners, f32, AABBVersion1CheckedItem)> = None;
         corners.iter().for_each(|x| {
             let (fitness, placment) = Self::check_item(bin, item, x, space, weights, order, weight);
-            let checker = match aabb.check_item(Item::new(*item, weight, order), x) {
-                Ok(x) => x,
-                Err(_) => None,
-            };
+            let checker = aabb.check_item_v2(Item::new(*item, weight, order), x);
             if let Some(check) = checker {
                 if let Some(corn) = &best_corner
                     && placment
@@ -182,7 +179,7 @@ impl AlgorithmenFirst {
         let new_placed_item = ItemsPlaced::new(corner.position, item.0.clone());
         // # TODO fix later
         let _ = checker
-            .add(item, &corner)
+            .add_v2(item, &corner)
             .expect("Adding to checker failed only for buildin");
         list_placed_items.push(new_placed_item);
         Ok(())

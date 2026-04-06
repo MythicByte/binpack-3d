@@ -5,7 +5,8 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
-hashbrown = { version = "0.16.1", features = ["rayon", "serde"] }
+hashbrown = { version = "0.16.1", features = ["inline-more", "rayon", "serde"] }
+itertools = "0.14.0"
 num-traits = "0.2.19"
 rayon = "1.11.0"
 serde = { version = "1.0.228", features = ["derive", "rc"] }

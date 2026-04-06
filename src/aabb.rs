@@ -1,4 +1,5 @@
 use hashbrown::HashMap;
+use itertools::iproduct;
 use serde::{
     Deserialize,
     Serialize,
@@ -68,12 +69,45 @@ impl AABBVersion1 {
         }
         Ok(())
     }
-    /// Check if a item does colliot or not
-    pub fn check_item(
-        &self,
-        item: Item,
+    /// Version 2 of add
+    pub fn add_v2(
+        &mut self,
+        item: AABBVersion1CheckedItem,
         corner: &Corners,
-    ) -> anyhow::Result<Option<AABBVersion1CheckedItem>> {
+    ) -> anyhow::Result<()> {
+        let item = item.0;
+        let mut position_minimum = corner.position.clone();
+        let x_position_minimum = position_minimum.clone();
+        let mut position_maximum = position_minimum.clone() + item.size_cube;
+        let x_position_maximum = position_maximum.clone();
+        position_minimum.divide_all(self.cell_size, 1);
+        position_maximum.divide_all(self.cell_size, 1);
+        let aabb = Vector6::new(
+            x_position_minimum.x.clone(),
+            x_position_minimum.y.clone(),
+            x_position_minimum.z.clone(),
+            x_position_maximum.x.clone(),
+            x_position_maximum.y.clone(),
+            x_position_maximum.z.clone(),
+        );
+        let end_x = position_maximum.x;
+        let end_y = position_maximum.y;
+        let end_z = position_maximum.z;
+        iproduct!(
+            position_minimum.x..=end_x,
+            position_minimum.y..=end_y,
+            position_minimum.z..=end_z
+        )
+        .for_each(|(x, y, z)| {
+            self.grid
+                .entry((x, y, z))
+                .or_insert_with(Vec::new)
+                .push(aabb);
+        });
+        Ok(())
+    }
+    /// Check if a item does colliot or not
+    pub fn check_item(&self, item: Item, corner: &Corners) -> Option<AABBVersion1CheckedItem> {
         let mut position_minimum = corner.position.clone();
         let mut position_maximum = position_minimum.clone() + item.size_cube.clone();
         let x_position_minimum = position_minimum.clone();
@@ -95,14 +129,54 @@ impl AABBVersion1 {
                             let overlay_z = x_position_minimum.z < existing_vector6.b
                                 && existing_vector6.z < x_position_maximum.z;
                             if overlay_x && overlay_y && overlay_z {
-                                return Ok(None);
+                                return None;
                             }
                         }
                     }
                 }
             }
         }
-        Ok(Some(AABBVersion1CheckedItem(item)))
+        Some(AABBVersion1CheckedItem(item))
+    }
+
+    /// Check v2
+    pub fn check_item_v2(&self, item: Item, corner: &Corners) -> Option<AABBVersion1CheckedItem> {
+        let mut position_minimum = corner.position.clone();
+        let mut position_maximum = position_minimum.clone() + item.size_cube.clone();
+        let x_position_minimum = position_minimum.clone();
+        let x_position_maximum = position_maximum.clone();
+        position_minimum.divide_all(self.cell_size, 1);
+        position_maximum.divide_all(self.cell_size, 1);
+        let end_x = position_maximum.x;
+        let end_y = position_maximum.y;
+        let end_z = position_maximum.z;
+        let result = iproduct!(
+            position_minimum.x..=end_x,
+            position_minimum.y..=end_y,
+            position_minimum.z..=end_z
+        )
+        .any(|(x, y, z)| {
+            self.grid
+                .get(&(x, y, z))
+                .map(|existing| {
+                    existing.iter().any(|existing_vector6| {
+                        let overlay_x = x_position_minimum.x < existing_vector6.w
+                            && existing_vector6.x < x_position_maximum.x;
+                        let overlay_y = x_position_minimum.y < existing_vector6.a
+                            && existing_vector6.y < x_position_maximum.y;
+                        let overlay_z = x_position_minimum.z < existing_vector6.b
+                            && existing_vector6.z < x_position_maximum.z;
+                        overlay_x && overlay_y && overlay_z
+                    })
+                })
+                .unwrap_or_else(|| false)
+        });
+        // only false no collision
+        if result == false {
+            return Some(AABBVersion1CheckedItem(item));
+        } else {
+            None
+        }
     }
     /// checks if a point is valid
     pub fn point_is_free(&self, p: &Corners) -> bool {
@@ -141,16 +215,12 @@ mod tests {
         let item = Item::new(Vector3::new(10, 10, 10), 10, 0);
         // check with no item
 
-        let test = aabb
-            .check_item(item.clone(), &Corners::new(0, 0, 0))
-            .unwrap();
+        let test = aabb.check_item_v2(item.clone(), &Corners::new(0, 0, 0));
         assert!(test.is_some());
         let test = test.unwrap();
         assert!(aabb.add(test, &Corners::new(0, 0, 0)).is_ok());
 
-        let test = aabb
-            .check_item(item.clone(), &Corners::new(0, 0, 0))
-            .unwrap();
+        let test = aabb.check_item(item.clone(), &Corners::new(0, 0, 0));
         assert!(test.is_none());
     }
 }

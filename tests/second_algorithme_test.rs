@@ -12,12 +12,12 @@ fn bin_fix_v2() {
     let bin = Bin::new(Vector3::new(1000, 1000, 1000), 100000, 0);
     let item = Item::new(Vector3::new(10, 10, 10), 10, 1);
     let mut list = Vec::with_capacity(1000);
-    for _ in 0..10000 {
+    for _ in 0..1000 {
         list.push(item.clone());
     }
     let algorithmen = SecondAlgorithmen::create_algorithmen(list, bin).unwrap();
     let result = algorithmen.calculate().unwrap();
-    // assert_eq!(100, result.items.len());
+    assert_eq!(1000, result.items.len());
     assert_eq!(0, result.removed_items.len());
     let mut hash_check: HashSet<Vector3<u32>> = HashSet::with_capacity(result.items.len());
     for i in result.items {
@@ -32,12 +32,12 @@ fn bin_variable_v3() {
     let bin = Bin::new(Vector3::new(10000, 10000, 10000), 100000, 0);
     let item = Item::new(Vector3::new(x(), x(), x()), 10, 1);
     let mut list = Vec::with_capacity(1000);
-    for _ in 0..100 {
+    for _ in 0..1000 {
         list.push(item.clone());
     }
     let algorithmen = SecondAlgorithmen::create_algorithmen(list, bin).unwrap();
     let result = algorithmen.calculate().unwrap();
-    assert_eq!(100, result.items.len());
+    assert_eq!(1000, result.items.len());
     assert_eq!(0, result.removed_items.len());
     let mut hash_check: HashSet<Vector3<u32>> = HashSet::with_capacity(result.items.len());
     for i in result.items {
