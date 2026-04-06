@@ -38,9 +38,9 @@ pub struct SecondAlgorithmen {
     bin: Bin,
     items: Vec<Item>,
     aabb: AABBVersion1,
+    /// Volume left in the bin
     volume_left: u32,
     corners: HashSet<Corners>,
-    space_left: SpaceLeftBin,
 }
 impl SecondAlgorithmen {
     fn is_support_under_it(items_placed: &Vec<ItemsPlaced>, item: &Item, point: &Corners) -> bool {
@@ -82,9 +82,12 @@ impl SecondAlgorithmen {
     /// Minimum is better
     fn score(bin: &Bin, item: &Item, point: &Corners) -> f32 {
         // without + 1 NaN can be possible
-        let x = (point.position.x + item.size_cube.x) as f32 + 1.0 / (bin.position.x as f32) + 1.0;
-        let y = (point.position.y + item.size_cube.y) as f32 + 1.0 / (bin.position.y as f32) + 1.0;
-        let z = (point.position.z + item.size_cube.z) as f32 + 1.0 / (bin.position.z as f32) + 1.0;
+        let x =
+            ((point.position.x + item.size_cube.x) as f32 + 1.0) / (bin.position.x as f32) + 1.0;
+        let y =
+            ((point.position.y + item.size_cube.y) as f32 + 1.0) / (bin.position.y as f32) + 1.0;
+        let z =
+            ((point.position.z + item.size_cube.z) as f32 + 1.0) / (bin.position.z as f32) + 1.0;
         let maximise_space_on_floor = (item.size_cube.x * item.size_cube.z) as f32;
         let result =
             ((x) + (y * 100.0) + (10.0 * z) - maximise_space_on_floor).clamp(f32::MIN, f32::MAX);
@@ -175,14 +178,12 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         let mut hashset: HashSet<Corners> = HashSet::with_capacity(length);
         // ignore
         let _ = hashset.insert(Corners::new(0, 0, 0));
-        let total_volume = bin.position.x * bin.position.y * bin.position.z;
         Ok(Self {
             bin,
             items: input,
             aabb: AABBVersion1::new(),
             volume_left: volume,
             corners: hashset,
-            space_left: SpaceLeftBin(total_volume),
         })
     }
 
@@ -207,7 +208,7 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
             .sum();
 
         let item_total_volume = item_total_volume.clamp(u32::MIN, u32::MAX);
-        let result = bin_volume - item_total_volume;
+        let result = (bin_volume - item_total_volume).clamp(u32::MIN, u32::MAX);
         let result = SpaceLeftBin(result);
         let check = result.0 > 0;
         (check, result)
@@ -247,8 +248,7 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
                     &mut aabb,
                 ) {
                     self.volume_left = self
-                        .space_left
-                        .0
+                        .volume_left
                         .saturating_sub(item_finished.item.volume_item());
                     placed_item.push(item_finished);
                     self.corners.extend(new_corners);
