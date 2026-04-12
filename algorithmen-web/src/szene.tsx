@@ -56,7 +56,7 @@ export default function Szene() {
 
         const items: any[] = [
         ];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 1000; i++) {
           items.push(new ItemSpec(Math.floor(Math.random() * 100)+ 1,1+ Math.floor(Math.random() * 100),1+ Math.floor(Math.random() * 100), 10, Math.floor(Math.random() * 100)));
             //items.push(new ItemSpec(10,10,10,10,1));
         }
