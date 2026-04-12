@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect,  useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { CameraControls, Edges } from "@react-three/drei";
 import * as wasm from "../../pkg/algorithmen_test3.js";
 
 interface PlacedResult {
+  id:number,
   x: number;
   y: number;
   z: number;
@@ -13,6 +14,7 @@ interface PlacedResult {
 }
 
 interface BinDims {
+  id:number,
   x: number;
   y: number;
   z: number;
@@ -28,14 +30,19 @@ function getNumberFieldOrGetter(obj: any, key: string): number {
 
 export default function Szene() {
   const [results, setResults] = useState<PlacedResult[]>([]);
-  const [binDims, setBinDims] = useState<BinDims>({ x: 100, y: 100, z: 100 });
+  const [binDims, setBinDims] = useState<BinDims>({id:1, x: 100, y: 100, z: 100 });
   const [step, setStep] = useState(0);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    const  hasRun = {current:false};
 
     (async () => {
+      if (hasRun.current) {
+        return;
+      }
+      hasRun.current = true
       try {
         // optional init (some wasm-pack builds need it, some don't)
         const maybeInit = (wasm as any).default;
@@ -45,9 +52,10 @@ export default function Szene() {
         const ItemSpec = (wasm as any).ItemSpec;
         const Algo = (wasm as any).AlgorithmenFirstWasm;
 
-        const bin = new BinSpec(100+ Math.floor(Math.random() * 1000), 100 + Math.floor(Math.random() * 1000), 200 + Math.floor(Math.random() * 1000), 100000, 0);
+        const bin = new BinSpec(1,100+ Math.floor(Math.random() * 1000), 100 + Math.floor(Math.random() * 1000), 200 + Math.floor(Math.random() * 1000), 100000, 0);
 
         const dims = {
+          id: getNumberFieldOrGetter(bin,"id"),
           x: getNumberFieldOrGetter(bin, "x"),
           y: getNumberFieldOrGetter(bin, "y"),
           z: getNumberFieldOrGetter(bin, "z"),
@@ -57,7 +65,7 @@ export default function Szene() {
         const items: any[] = [
         ];
         for (let i = 0; i < 1000; i++) {
-          items.push(new ItemSpec(Math.floor(Math.random() * 100)+ 1,1+ Math.floor(Math.random() * 100),1+ Math.floor(Math.random() * 100), 10, Math.floor(Math.random() * 100)));
+          items.push(new ItemSpec(i+2,Math.floor(Math.random() * 100)+ 1,1+ Math.floor(Math.random() * 100),1+ Math.floor(Math.random() * 100), 10, Math.floor(Math.random() * 100)));
             //items.push(new ItemSpec(10,10,10,10,1));
         }
 
@@ -67,6 +75,7 @@ export default function Szene() {
         console.log("removed:", r[0].ignore); // ignore field carries removed count
 
         const mapped: PlacedResult[] = r.map((it) => ({
+          id: it.id,
           x: it.x,
           y: it.y,
           z: it.z,

@@ -9,7 +9,7 @@ use crate::vector::Vector3;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bin {
     /// Primary Key
-    id: i32,
+    pub id: i32,
     /// The Position of a Item
     pub position: Vector3<u32>,
     /// Weight

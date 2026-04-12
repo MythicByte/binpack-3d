@@ -9,7 +9,7 @@ use crate::vector::Vector3;
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct Item {
     /// Primary key
-    id: i32,
+    pub id: i32,
     /// The size of a Item
     pub size_cube: Vector3<u32>,
     /// Weight
