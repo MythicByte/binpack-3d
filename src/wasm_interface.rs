@@ -22,6 +22,7 @@ fn to_js_error(e: AlgorithmenError) -> JsError {
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct BinSpec {
+    id: i32,
     x: u32,
     y: u32,
     z: u32,
@@ -33,8 +34,9 @@ pub struct BinSpec {
 impl BinSpec {
     #[wasm_bindgen(constructor)]
     ///
-    pub fn new(x: u32, y: u32, z: u32, max_weight: u32, weight_currently: u32) -> BinSpec {
+    pub fn new(id: i32, x: u32, y: u32, z: u32, max_weight: u32, weight_currently: u32) -> BinSpec {
         Self {
+            id,
             x,
             y,
             z,
@@ -73,6 +75,7 @@ impl BinSpec {
 impl From<BinSpec> for Bin {
     fn from(b: BinSpec) -> Self {
         Bin::new(
+            b.id,
             Vector3::new(b.x, b.y, b.z),
             b.max_weight,
             b.weight_currently,
@@ -84,6 +87,7 @@ impl From<BinSpec> for Bin {
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct ItemSpec {
+    id: i32,
     x: u32,
     y: u32,
     z: u32,
@@ -96,8 +100,9 @@ pub struct ItemSpec {
 impl ItemSpec {
     #[wasm_bindgen(constructor)]
     ///
-    pub fn new(x: u32, y: u32, z: u32, weight: u32, order: u32) -> ItemSpec {
+    pub fn new(id: i32, x: u32, y: u32, z: u32, weight: u32, order: u32) -> ItemSpec {
         Self {
+            id,
             x,
             y,
             z,
@@ -135,7 +140,7 @@ impl ItemSpec {
 
 impl From<ItemSpec> for Item {
     fn from(i: ItemSpec) -> Self {
-        Item::new(Vector3::new(i.x, i.y, i.z), i.weight, i.order)
+        Item::new(i.id, Vector3::new(i.x, i.y, i.z), i.weight, i.order)
     }
 }
 

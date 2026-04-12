@@ -1,3 +1,5 @@
+use std::ops::Div;
+
 use crate::{
     aabb::{
         AABBVersion1,
@@ -134,7 +136,7 @@ impl AlgorithmenFirst {
         let mut best_corner: Option<(Corners, f32, AABBVersion1CheckedItem)> = None;
         corners.iter().for_each(|x| {
             let (fitness, placment) = Self::check_item(bin, item, x, space, weights, order, weight);
-            let checker = aabb.check_item_v2(Item::new(*item, weight, order), x);
+            let checker = aabb.check_item_v2(Item::new(1, *item, weight, order), x);
             if let Some(check) = checker {
                 if let Some(corn) = &best_corner
                     && placment
@@ -331,8 +333,8 @@ mod tests {
 
     #[test]
     fn bin_fix() {
-        let bin = Bin::new(Vector3::new(1000, 1000, 1000), 100000, 0);
-        let item = Item::new(Vector3::new(10, 10, 10), 10, 1);
+        let bin = Bin::new(1, Vector3::new(1000, 1000, 1000), 100000, 0);
+        let item = Item::new(1, Vector3::new(10, 10, 10), 10, 1);
         let mut list = Vec::with_capacity(1000);
         for _ in 0..100 {
             list.push(item.clone());
