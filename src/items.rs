@@ -8,6 +8,8 @@ use crate::vector::Vector3;
 /// The Item which should be sorted in the bin
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct Item {
+    /// Primary key
+    id: i32,
     /// The size of a Item
     pub size_cube: Vector3<u32>,
     /// Weight
@@ -17,8 +19,9 @@ pub struct Item {
 }
 impl Item {
     /// Default Constructor
-    pub const fn new(position: Vector3<u32>, weight: u32, order: u32) -> Self {
+    pub const fn new(id: i32, position: Vector3<u32>, weight: u32, order: u32) -> Self {
         Self {
+            id,
             size_cube: position,
             weight,
             order,
@@ -45,12 +48,12 @@ impl Item {
     /// ratation v2
     pub fn rotation_v2(&self) -> Vec<Item> {
         let (x, y, z) = (self.size_cube.x, self.size_cube.y, self.size_cube.z);
-        let first_rotation = Item::new(Vector3::new(y, x, z), self.weight, self.order);
-        let second_rotation = Item::new(Vector3::new(x, z, y), self.weight, self.order);
-        let four_rotation = Item::new(Vector3::new(z, x, y), self.weight, self.order);
-        let five_rotation = Item::new(Vector3::new(y, z, x), self.weight, self.order);
-        let sixs_rotation = Item::new(Vector3::new(z, y, x), self.weight, self.order);
-        let normal_rotation = Item::new(Vector3::new(x, y, z), self.weight, self.order);
+        let first_rotation = Item::new(self.id, Vector3::new(y, x, z), self.weight, self.order);
+        let second_rotation = Item::new(self.id, Vector3::new(x, z, y), self.weight, self.order);
+        let four_rotation = Item::new(self.id, Vector3::new(z, x, y), self.weight, self.order);
+        let five_rotation = Item::new(self.id, Vector3::new(y, z, x), self.weight, self.order);
+        let sixs_rotation = Item::new(self.id, Vector3::new(z, y, x), self.weight, self.order);
+        let normal_rotation = Item::new(self.id, Vector3::new(x, y, z), self.weight, self.order);
         vec![
             normal_rotation,
             first_rotation,

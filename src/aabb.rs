@@ -213,7 +213,7 @@ mod tests {
     #[test]
     fn check_no_collision_and_collision_same_item() {
         let mut aabb = AABBVersion1::new(10 as usize);
-        let item = Item::new(Vector3::new(10, 10, 10), 10, 0);
+        let item = Item::new(1, Vector3::new(10, 10, 10), 10, 0);
         // check with no item
 
         let test = aabb.check_item_v2(item.clone(), &Corners::new(0, 0, 0));

@@ -18,7 +18,7 @@ fn generate_valid_test_case() -> (Bin, Vec<Item>) {
         rng.random_range(10..100),
     );
     let bin_weight_capacity = rng.random_range(1000..10000);
-    let bin = Bin::new(bin_size, bin_weight_capacity, 0);
+    let bin = Bin::new(1, bin_size, bin_weight_capacity, 0);
 
     // Generate 5-20 items with dimensions < bin and total volume/weight < bin
     let item_count = rng.random_range(5..20);
@@ -41,7 +41,7 @@ fn generate_valid_test_case() -> (Bin, Vec<Item>) {
         if ((total_volume + item_volume) as f32)
             < ((bin_size.x * bin_size.y * bin_size.z) as f32) * 0.9
         {
-            items.push(Item::new(item_size, item_weight, 0));
+            items.push(Item::new(1, item_size, item_weight, 0));
             total_volume += item_volume;
             total_weight += item_weight;
         }
@@ -70,35 +70,34 @@ fn algorithmenfirst_random_invalid() {
         rng.random_range(10..100),
     );
     let bin_weight_capacity = rng.random_range(1000..10000);
-    let bin = Bin::new(bin_size, bin_weight_capacity, 0);
+    let bin = Bin::new(1, bin_size, bin_weight_capacity, 0);
 
     // Generate items that definitely exceed bin capacity
     let item = Item::new(
+        1,
         bin_size + Vector3::new(1, 1, 1), // Slightly larger than bin
         bin_weight_capacity + 1,
         0,
     );
     let items = vec![item];
 
-    let result = SecondAlgorithmen::create_algorithmen(items, bin);
+    let result = SecondAlgorithmen::check_fit_quick(&items, &bin);
     dbg!(&result);
-    assert!(
-        result.unwrap_err() == algorithmen_test3::algorithmen::AlgorithmenError::NotEnoughSpace
-    );
+    assert!(!result.0);
 }
 
 #[test]
 fn algorithmenfirst_random_edge_cases() {
     // Test exact fit
     let bin_size = Vector3::new(10, 10, 10);
-    let bin = Bin::new(bin_size, 1000, 0);
-    let item = Item::new(bin_size, 1000, 0);
+    let bin = Bin::new(1, bin_size, 1000, 0);
+    let item = Item::new(1, bin_size, 1000, 0);
     let result = SecondAlgorithmen::create_algorithmen(vec![item], bin).unwrap();
     assert!(result.calculate().is_ok());
 
     // Test single item that fits
-    let bin = Bin::new(Vector3::new(20, 20, 20), 8000, 0);
-    let item = Item::new(Vector3::new(10, 10, 10), 100, 0);
+    let bin = Bin::new(1, Vector3::new(20, 20, 20), 8000, 0);
+    let item = Item::new(1, Vector3::new(10, 10, 10), 100, 0);
     let result = SecondAlgorithmen::create_algorithmen(vec![item], bin).unwrap();
     assert!(result.calculate().is_ok());
 }

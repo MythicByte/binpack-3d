@@ -9,8 +9,8 @@ use hashbrown::HashSet;
 
 #[test]
 fn bin_fix_v2() {
-    let bin = Bin::new(Vector3::new(1000, 1000, 1000), 100000, 0);
-    let item = Item::new(Vector3::new(10, 10, 10), 10, 1);
+    let bin = Bin::new(1, Vector3::new(1000, 1000, 1000), 100000, 0);
+    let item = Item::new(1, Vector3::new(10, 10, 10), 10, 1);
     let mut list = Vec::with_capacity(1000);
     for _ in 0..1000 {
         list.push(item.clone());
@@ -29,8 +29,8 @@ fn bin_fix_v2() {
 #[test]
 fn bin_variable_v3() {
     let x = || return rand::random_range(0u32..100u32);
-    let bin = Bin::new(Vector3::new(10000, 10000, 10000), 100000, 0);
-    let item = Item::new(Vector3::new(x(), x(), x()), 10, 1);
+    let bin = Bin::new(1, Vector3::new(10000, 10000, 10000), 100000, 0);
+    let item = Item::new(1, Vector3::new(x(), x(), x()), 10, 1);
     let mut list = Vec::with_capacity(1000);
     for _ in 0..1000 {
         list.push(item.clone());

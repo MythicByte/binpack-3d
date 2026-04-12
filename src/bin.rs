@@ -8,6 +8,8 @@ use crate::vector::Vector3;
 /// The Bin to the placed into
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bin {
+    /// Primary Key
+    id: i32,
     /// The Position of a Item
     pub position: Vector3<u32>,
     /// Weight
@@ -17,8 +19,14 @@ pub struct Bin {
 }
 impl Bin {
     /// Default Constructor
-    pub const fn new(position: Vector3<u32>, max_weight: u32, weight_currently: u32) -> Self {
+    pub const fn new(
+        id: i32,
+        position: Vector3<u32>,
+        max_weight: u32,
+        weight_currently: u32,
+    ) -> Self {
         Self {
+            id,
             position,
             max_weight,
             weight_currently,

@@ -237,7 +237,9 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
             .sum();
 
         let item_total_volume = item_total_volume.clamp(u32::MIN, u32::MAX);
-        let result = (bin_volume - item_total_volume).clamp(u32::MIN, u32::MAX);
+        let result = bin_volume
+            .saturating_sub(item_total_volume)
+            .clamp(u32::MIN, u32::MAX);
         let result = SpaceLeftBin(result);
         let check = result.0 > 0;
         (check, result)
@@ -306,7 +308,7 @@ mod tests {
     proptest! {
         #[test]
         fn second_algorithmen_score(x in 0u32..100,y in 0u32..100,z in 0u32..100) {
-            let result = SecondAlgorithmen::score(&Bin::new(Vector3::new(x + 100, y + 100, z + 100), 1000, 0), &Item::new(Vector3::new(x, y, z), 10, 1), &Corners::new(0,0,0));
+            let result = SecondAlgorithmen::score(&Bin::new(1,Vector3::new(x + 100, y + 100, z + 100), 1000, 0), &Item::new(1,Vector3::new(x, y, z), 10, 1), &Corners::new(0,0,0));
             dbg!(&result);
             prop_assert!(result.is_normal());
             prop_assert!(!result.is_nan());

@@ -22,9 +22,9 @@ fn check_first_algorithmen(c: &mut Criterion) {
     let mut _rng = ChaCha20Rng::from_seed(seed);
     let mut group = c.benchmark_group("Second Algorithmen");
     group.sample_size(10);
-    let bin = Bin::new(Vector3::new(10000, 10000, 10000), 10000000, 0);
+    let bin = Bin::new(1, Vector3::new(10000, 10000, 10000), 10000000, 0);
     let items: Vec<Item> = (0..10000)
-        .map(|_| Item::new(Vector3::new(10, 10, 10), 10, 1))
+        .map(|x| Item::new(x, Vector3::new(10, 10, 10), 10, 1))
         .collect();
     let algorithmen_in = SecondAlgorithmen::create_algorithmen(items, bin).unwrap();
     // group.bench_function("Second Algorithmen 10000 rotations", |b| {
