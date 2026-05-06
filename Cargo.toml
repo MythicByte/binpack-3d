@@ -2,6 +2,13 @@
 name = "binpack-3d"
 version = "0.1.0"
 edition = "2024"
+keywords = ["bin-packing", "3d", "wasm", "algorithms", "logistics"]
+categories = ["algorithms", "wasm"]
+description = "A high-performance, deterministic 3D bin packing library written in Rust."
+authors = ["Markus Götz <markusgoetz@gmail.com>"]
+license = "MPL-2.0"
+repository = "https://github.com/MythicByte/binpack-3d"
+readme = "README.md"
 
 [features]
 default = ["second_algorithmen"]

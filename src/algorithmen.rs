@@ -1,10 +1,7 @@
 use thiserror::Error;
 
 use crate::{
-    bin::{
-        Bin,
-        SpaceLeftBin,
-    },
+    bin::{Bin, SpaceLeftBin},
     corners::Corners,
     items::Item,
     sortedbin::SortedBin,
@@ -40,7 +37,7 @@ where
     ///
     /// the score function checks what the best position is to place a object
     ///
-    /// In some chasses a custom is preferred ['score']
+    /// In some chasses a custom is preferred
     #[must_use]
     fn calculate_custom<F>(
         self,
