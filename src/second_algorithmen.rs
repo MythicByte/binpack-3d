@@ -94,13 +94,17 @@ impl SecondAlgorithmen {
         result
     }
     /// Find best point to place
-    fn find_best_point_to_place(
+    fn find_best_point_to_place<F>(
         points: &HashSet<Corners>,
         item: Item,
         aabb: &AABBVersion1,
         bin: &Bin,
         placed_items: &Vec<ItemsPlaced>,
-    ) -> Option<(AABBVersion1CheckedItem, f32, Corners)> {
+        custom_score_function: Option<F>,
+    ) -> Option<(AABBVersion1CheckedItem, f32, Corners)>
+    where
+        F: Fn(&Bin, &Item, &Corners) -> f32 + Send + Sync,
+    {
         let all_items_rotated = item.rotation_v2();
         all_items_rotated
             .into_iter()
@@ -117,7 +121,10 @@ impl SecondAlgorithmen {
                             return None;
                         }
                         let check = aabb.check_item_v2(x_item.clone(), &x_corner)?;
-                        let score = Self::score(bin, &x_item, &x_corner);
+                        let score = match custom_score_function.as_ref() {
+                            None => Self::score(bin, &x_item, &x_corner),
+                            Some(x) => x(bin, &x_item, &x_corner),
+                        };
                         return Some((check, score, x_corner));
                     })
                     .min_by(|a, b| {
@@ -216,12 +223,16 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         })
     }
 
+    /// Add item to the list
     fn add_item(&mut self, input: Vec<Item>) -> Result<(), crate::algorithmen::AlgorithmenError> {
-        todo!()
+        self.items.extend(input);
+        Ok(())
     }
 
+    /// Removes items from the list no size check
     fn remove_item(&mut self, input: Vec<Item>) -> Result<(), Vec<Item>> {
-        todo!();
+        self.items.retain(|x| !input.contains(x));
+        Ok(())
     }
 
     fn space_left(&self) -> u32 {
@@ -245,9 +256,13 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         (check, result)
     }
 
-    fn calculate(
+    fn calculate_custom<F>(
         mut self,
-    ) -> Result<crate::sortedbin::SortedBin, crate::algorithmen::AlgorithmenError> {
+        custom_score_function: Option<F>,
+    ) -> Result<crate::sortedbin::SortedBin, crate::algorithmen::AlgorithmenError>
+    where
+        F: Fn(&Bin, &Item, &Corners) -> f32 + Send + Sync,
+    {
         let item = mem::take(&mut self.items);
         let (mut keep, remove): (Vec<Item>, Vec<Item>) = item.into_par_iter().partition(|x| {
             x.size_cube.x <= self.bin.position.x
@@ -270,6 +285,7 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
                 &aabb,
                 &self.bin,
                 &placed_item,
+                custom_score_function.as_ref(),
             );
             if let Some(checked_result) = result {
                 if let Ok((item_finished, new_corners)) = Self::place_item_in_bin(
@@ -291,6 +307,10 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
             }
         });
         Ok(SortedBin::new(self.bin, placed_item, removed_items))
+    }
+
+    fn calculate(mut self) -> Result<SortedBin, crate::algorithmen::AlgorithmenError> {
+        Self::calculate_custom(self, None::<fn(&Bin, &Item, &Corners) -> f32>)
     }
 }
 #[cfg(test)]

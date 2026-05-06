@@ -5,6 +5,7 @@ use crate::{
         Bin,
         SpaceLeftBin,
     },
+    corners::Corners,
     items::Item,
     sortedbin::SortedBin,
 };
@@ -29,8 +30,22 @@ where
     /// Checks if the Items can be in a bin, possible fast check
     fn check_fit_quick(input: &[Item], bin: &Bin) -> (bool, SpaceLeftBin);
     /// A final result
+    ///
+    /// the score function checks what the best position is to place a object
     #[must_use]
     fn calculate(self) -> Result<SortedBin, AlgorithmenError>;
+    /// A final result
+    ///
+    /// the score function checks what the best position is to place a object
+    ///
+    /// In some chasses a custom is preferred ['score']
+    #[must_use]
+    fn calculate_custom<F>(
+        self,
+        custom_score_function: Option<F>,
+    ) -> Result<SortedBin, AlgorithmenError>
+    where
+        F: Fn(&Bin, &Item, &Corners) -> f32 + Send + Sync;
 }
 
 /// Errors for AlgorithmenFirst
