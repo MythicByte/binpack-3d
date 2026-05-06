@@ -23,3 +23,38 @@ Add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
 binpack-3d = "0.1.0" 
+```
+
+### For JavaScript/TypeScript (Wasm)
+
+You can use the Wasm package by importing it into your Node.js or web project once compiled with `wasm-pack`:
+
+```bash
+# Build the wasm package
+wasm-pack build --target web
+```
+
+## Usage Example
+
+### Rust
+
+```rust
+use binpack_3d::{Packer, Item, Bin};
+
+fn main() {
+  let bin = Bin::new(1,Vector3::new(1000,1000,1000),100000,0);
+  let item = Item::new(1,Vector3::new(10,10,10),10,1);
+  let mut item_list:Vec<Item> = Vec::with_capacity(x as usize);
+  for _ in 0..x {
+      item_list.push(item.clone());
+  }
+  let mut algorithmus = SecondAlgorithmen::create_algorithmen(item_list, bin).unwrap();
+  let result = algorithmus.calculate().unwrap();
+}
+```
+
+## Contributing
+Contributions are welcome! Please feel free to submit a Pull Request or open an issue.
+
+## License
+MPL 2.0
