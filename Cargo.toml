@@ -5,7 +5,6 @@ edition = "2024"
 
 [features]
 default = ["second_algorithmen"]
-first_algorithmen = []
 second_algorithmen = []
 
 [dependencies]

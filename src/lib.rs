@@ -11,9 +11,6 @@ pub mod algorithmen;
 pub mod bin;
 /// The corner
 pub mod corners;
-/// The first algorithmen for placing items in a bin
-#[cfg(feature = "first_algorithmen")]
-pub mod first_algorithmen;
 /// A item
 pub mod items;
 /// Second algorithmen
