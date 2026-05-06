@@ -12,26 +12,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "algorithmen_test3"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "criterion",
- "hashbrown 0.16.1",
- "insta",
- "itertools 0.14.0",
- "num-traits",
- "proptest",
- "rand 0.10.0",
- "rayon",
- "serde",
- "thiserror",
- "tracing",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
 name = "alloca"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -69,6 +49,26 @@ name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
+
+[[package]]
+name = "binpack-3d"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "criterion",
+ "hashbrown 0.16.1",
+ "insta",
+ "itertools 0.14.0",
+ "num-traits",
+ "proptest",
+ "rand 0.10.0",
+ "rayon",
+ "serde",
+ "thiserror",
+ "tracing",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
 name = "bit-set"

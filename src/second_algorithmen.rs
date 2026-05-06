@@ -309,7 +309,7 @@ impl Algorithmen3DBinPackaging for SecondAlgorithmen {
         Ok(SortedBin::new(self.bin, placed_item, removed_items))
     }
 
-    fn calculate(mut self) -> Result<SortedBin, crate::algorithmen::AlgorithmenError> {
+    fn calculate(self) -> Result<SortedBin, crate::algorithmen::AlgorithmenError> {
         Self::calculate_custom(self, None::<fn(&Bin, &Item, &Corners) -> f32>)
     }
 }

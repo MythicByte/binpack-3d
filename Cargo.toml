@@ -1,5 +1,5 @@
 [package]
-name = "algorithmen_test3"
+name = "binpack-3d"
 version = "0.1.0"
 edition = "2024"
 
@@ -35,9 +35,6 @@ opt-level = 3
 name = "first_algorithmen"
 harness = false
 
-[target.x86_64-unknown-linux-gnu]
-linker = "/usr/bin/clang"
-rustflags = ["-Clink-arg=-fuse-ld=lld", "-Clink-arg=-Wl,--no-rosegment"]
 
 [lints.clippy]
 indexing_slicing = "deny"

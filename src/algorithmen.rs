@@ -32,6 +32,8 @@ where
     /// A final result
     ///
     /// the score function checks what the best position is to place a object
+    ///
+    /// Used default score function
     #[must_use]
     fn calculate(self) -> Result<SortedBin, AlgorithmenError>;
     /// A final result
