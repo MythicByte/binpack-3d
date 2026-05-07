@@ -1,7 +1,10 @@
 use thiserror::Error;
 
 use crate::{
-    bin::{Bin, SpaceLeftBin},
+    bin::{
+        Bin,
+        SpaceLeftBin,
+    },
     corners::Corners,
     items::Item,
     sortedbin::SortedBin,

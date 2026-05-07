@@ -40,10 +40,10 @@ impl AABBVersion1 {
     /// Add a new value
     pub fn add(&mut self, item: AABBVersion1CheckedItem, corner: &Corners) -> anyhow::Result<()> {
         let item = item.0;
-        let mut position_minimum = corner.position.clone();
-        let x_position_minimum = position_minimum.clone();
-        let mut position_maximum = position_minimum.clone() + item.size_cube;
-        let x_position_maximum = position_maximum.clone();
+        let mut position_minimum = corner.position;
+        let x_position_minimum = position_minimum;
+        let mut position_maximum = position_minimum + item.size_cube;
+        let x_position_maximum = position_maximum;
         position_minimum.divide_all(self.cell_size, 1);
         position_maximum.divide_all(self.cell_size, 1);
         let aabb = Vector6::new(

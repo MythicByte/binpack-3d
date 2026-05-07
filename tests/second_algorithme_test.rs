@@ -1,4 +1,4 @@
-use algorithmen_test3::{
+use binpack_3d::{
     algorithmen::Algorithmen3DBinPackaging,
     bin::Bin,
     items::Item,
