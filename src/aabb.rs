@@ -31,6 +31,7 @@ pub struct AABBVersion1CheckedItem(pub Item);
 
 impl AABBVersion1 {
     /// Creates a new AABB Checker
+    #[must_use]
     pub fn new(length: usize) -> Self {
         Self {
             grid: HashMap::with_capacity(length),

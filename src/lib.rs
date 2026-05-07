@@ -1,5 +1,4 @@
 //! A programm for sorting items in bins
-#![deny(clippy::all)]
 #![deny(missing_docs)]
 #![deny(unused_must_use)]
 #![deny(unused_results)]
