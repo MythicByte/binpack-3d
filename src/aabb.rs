@@ -48,12 +48,12 @@ impl AABBVersion1 {
         position_minimum.divide_all(self.cell_size, 1);
         position_maximum.divide_all(self.cell_size, 1);
         let aabb = Vector6::new(
-            x_position_minimum.x.clone(),
-            x_position_minimum.y.clone(),
-            x_position_minimum.z.clone(),
-            x_position_maximum.x.clone(),
-            x_position_maximum.y.clone(),
-            x_position_maximum.z.clone(),
+            x_position_minimum.x,
+            x_position_minimum.y,
+            x_position_minimum.z,
+            x_position_maximum.x,
+            x_position_maximum.y,
+            x_position_maximum.z,
         );
         let end_x = position_maximum.x;
         let end_y = position_maximum.y;
@@ -77,19 +77,19 @@ impl AABBVersion1 {
         corner: &Corners,
     ) -> anyhow::Result<()> {
         let item = item.0;
-        let mut position_minimum = corner.position.clone();
-        let x_position_minimum = position_minimum.clone();
-        let mut position_maximum = position_minimum.clone() + item.size_cube;
-        let x_position_maximum = position_maximum.clone();
+        let mut position_minimum = corner.position;
+        let x_position_minimum = position_minimum;
+        let mut position_maximum = position_minimum + item.size_cube;
+        let x_position_maximum = position_maximum;
         position_minimum.divide_all(self.cell_size, 1);
         position_maximum.divide_all(self.cell_size, 1);
         let aabb = Vector6::new(
-            x_position_minimum.x.clone(),
-            x_position_minimum.y.clone(),
-            x_position_minimum.z.clone(),
-            x_position_maximum.x.clone(),
-            x_position_maximum.y.clone(),
-            x_position_maximum.z.clone(),
+            x_position_minimum.x,
+            x_position_minimum.y,
+            x_position_minimum.z,
+            x_position_maximum.x,
+            x_position_maximum.y,
+            x_position_maximum.z,
         );
         let end_x = position_maximum.x;
         let end_y = position_maximum.y;
@@ -109,11 +109,12 @@ impl AABBVersion1 {
         Ok(())
     }
     /// Check if a item does colliot or not
+    #[must_use]
     pub fn check_item(&self, item: Item, corner: &Corners) -> Option<AABBVersion1CheckedItem> {
-        let mut position_minimum = corner.position.clone();
-        let mut position_maximum = position_minimum.clone() + item.size_cube.clone();
-        let x_position_minimum = position_minimum.clone();
-        let x_position_maximum = position_maximum.clone();
+        let mut position_minimum = corner.position;
+        let mut position_maximum = position_minimum + item.size_cube;
+        let x_position_minimum = position_minimum;
+        let x_position_maximum = position_maximum;
         position_minimum.divide_all(self.cell_size, 1);
         position_maximum.divide_all(self.cell_size, 1);
         let end_x = position_maximum.x;
@@ -142,11 +143,12 @@ impl AABBVersion1 {
     }
 
     /// Check v2
+    #[must_use]
     pub fn check_item_v2(&self, item: Item, corner: &Corners) -> Option<AABBVersion1CheckedItem> {
-        let mut position_minimum = corner.position.clone();
-        let mut position_maximum = position_minimum.clone() + item.size_cube.clone();
-        let x_position_minimum = position_minimum.clone();
-        let x_position_maximum = position_maximum.clone();
+        let mut position_minimum = corner.position;
+        let mut position_maximum = position_minimum + item.size_cube;
+        let x_position_minimum = position_minimum;
+        let x_position_maximum = position_maximum;
         position_minimum.divide_all(self.cell_size, 1);
         position_maximum.divide_all(self.cell_size, 1);
         let end_x = position_maximum.x;
@@ -174,13 +176,14 @@ impl AABBVersion1 {
                 .unwrap_or_else(|| false)
         });
         // only false no collision
-        if result == false {
-            return Some(AABBVersion1CheckedItem(item));
+        if !result {
+            Some(AABBVersion1CheckedItem(item))
         } else {
             None
         }
     }
     /// checks if a point is valid
+    #[must_use]
     pub fn point_is_free(&self, p: &Corners) -> bool {
         let point = p.clone().position;
         let mut cell = p.position;

@@ -1,7 +1,4 @@
-use std::{
-    mem,
-    u32,
-};
+use std::mem;
 
 use hashbrown::HashSet;
 use rayon::iter::{
@@ -89,9 +86,8 @@ impl SecondAlgorithmen {
         let z =
             ((point.position.z + item.size_cube.z) as f32 + 1.0) / (bin.position.z as f32) + 1.0;
         let maximise_space_on_floor = (item.size_cube.x * item.size_cube.z) as f32;
-        let result =
-            ((x) + (y * 100.0) + (10.0 * z) - maximise_space_on_floor).clamp(f32::MIN, f32::MAX);
-        result
+
+        ((x) + (y * 100.0) + (10.0 * z) - maximise_space_on_floor).clamp(f32::MIN, f32::MAX)
     }
     /// Find best point to place
     fn find_best_point_to_place<F>(
@@ -125,12 +121,9 @@ impl SecondAlgorithmen {
                             None => Self::score(bin, &x_item, &x_corner),
                             Some(x) => x(bin, &x_item, &x_corner),
                         };
-                        return Some((check, score, x_corner));
+                        Some((check, score, x_corner))
                     })
-                    .min_by(|a, b| {
-                        a.1.partial_cmp(&b.1)
-                            .unwrap_or_else(|| std::cmp::Ordering::Equal)
-                    })
+                    .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
             })
             .min_by(|a, b| {
                 a.1.partial_cmp(&b.1)
